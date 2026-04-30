@@ -23,8 +23,8 @@ export function ProgressBar({ section, cw }: { section: UsageSection; cw: number
   return (
     <Text>
       {section.label.padEnd(10)}{' '}
-      {filled > 0 && <Text bold color={color}>{'█'.repeat(filled)}</Text>}
-      <Text dimColor>{'·'.repeat(unfilled)}</Text>{' '}
+      {filled > 0 && <Text bold color={color}>{'■'.repeat(filled)}</Text>}
+      <Text dimColor>{'■'.repeat(unfilled)}</Text>{' '}
       {suffix}
       <Text dimColor>{resetStr}</Text>
     </Text>
