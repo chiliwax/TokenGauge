@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Logs & debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Build outputs (if you add tsc emit later)
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Test / coverage
+coverage/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE (keep shared VS Code settings if you commit .vscode/)
+.idea/
