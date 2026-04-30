@@ -22,6 +22,11 @@ export function Dashboard({ usages, lastFetchTime, refreshSeconds, onManage, onR
     return () => { stdout.off('resize', onResize); };
   }, [stdout]);
 
+  useEffect(() => {
+    const tick = setInterval(() => bump(n => n + 1), 1000);
+    return () => clearInterval(tick);
+  }, []);
+
   const termW = stdout.columns ?? 80;
   const innerW = termW - 2;
 
@@ -42,12 +47,17 @@ export function Dashboard({ usages, lastFetchTime, refreshSeconds, onManage, onR
   const timeStr = new Date(lastFetchTime).toLocaleTimeString();
 
   return (
-    <Box flexDirection="column" paddingLeft={1} paddingRight={1} gap={0}>
-      <Text>{'✦ '}<Text bold>TokenGauge</Text></Text>
-      <Text dimColor>{'─'.repeat(Math.max(0, innerW - 26))} [q] / [Ctrl+C] to quit {'─'.repeat(2)}</Text>
+    <Box flexDirection="column" paddingLeft={1} paddingRight={1} gap={0} marginTop={1}>
+      <Text dimColor>{'─'.repeat(innerW)}</Text>
+      <Box>
+        <Text><Text color="cyan">◈</Text> <Text color="cyan" bold>TokenGauge</Text></Text>
+        <Box flexGrow={1} />
+        <Text dimColor>[q] quit</Text>
+      </Box>
+      <Text dimColor>{'─'.repeat(innerW)}</Text>
 
       {usages.map((usage) => (
-        <Box key={usage.providerName} borderStyle="round" flexDirection="column" paddingLeft={1} paddingRight={1} marginTop={1}>
+        <Box key={usage.providerName} borderStyle="round" flexDirection="column" paddingLeft={1} paddingRight={1}>
           <Text bold>{usage.providerName}{usage.plan ? <Text dimColor> — {usage.plan}</Text> : null}</Text>
 
           {usage.error ? (
