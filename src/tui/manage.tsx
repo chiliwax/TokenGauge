@@ -38,22 +38,8 @@ export function ManagePage({ onDone }: ManagePageProps) {
 
   const reload = () => setAccounts(loadCredentials());
 
-  if (subPage.type === 'connect') {
-    return (
-      <ConnectPage
-        onDone={(result) => {
-          if (result) {
-            saveAccount(result);
-            reload();
-            setModified(true);
-          }
-          setSubPage({ type: 'list' });
-        }}
-      />
-    );
-  }
-
   useInput((input, key) => {
+    if (subPage.type === 'connect') return;
     if (subPage.type === 'list') {
       const items: { type: string }[] = [];
       for (let i = 0; i < accounts.length; i++) items.push({ type: 'account' });
@@ -120,7 +106,7 @@ export function ManagePage({ onDone }: ManagePageProps) {
         setSubPage({ type: 'detail', index });
       } else if (key.backspace) {
         setBuffer(buffer.slice(0, -1));
-      } else if ((key.ctrl && input === 'c') || input === 'q') {
+      } else if (key.ctrl && input === 'c') {
         exit();
       } else if (!key.ctrl && input) {
         setBuffer(buffer + input);
@@ -170,13 +156,28 @@ export function ManagePage({ onDone }: ManagePageProps) {
         setCursor(0);
       } else if (key.backspace) {
         setBuffer(buffer.slice(0, -1));
-      } else if ((key.ctrl && input === 'c') || input === 'q') {
+      } else if (key.ctrl && input === 'c') {
         exit();
       } else if (!key.ctrl && input) {
         setBuffer(buffer + input);
       }
     }
   });
+
+  if (subPage.type === 'connect') {
+    return (
+      <ConnectPage
+        onDone={(result) => {
+          if (result) {
+            saveAccount(result);
+            reload();
+            setModified(true);
+          }
+          setSubPage({ type: 'list' });
+        }}
+      />
+    );
+  }
 
   const renderList = () => {
     const items: { type: string; label: string }[] = [];

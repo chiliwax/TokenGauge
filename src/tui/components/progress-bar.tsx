@@ -8,7 +8,7 @@ export function ProgressBar({ section, cw }: { section: UsageSection; cw: number
   const filled = Math.min(barW, Math.max(0, Math.floor((pct / 100) * barW)));
   const unfilled = barW - filled;
 
-  const color = pct >= 80 ? 'red' : pct >= 50 ? 'yellow' : 'green';
+  const color = pct >= 80 ? '#e06c75' : pct >= 50 ? '#f0c674' : '#7dd87d';
 
   const suffix = section.displayValue ?? (
     section.current != null && section.max != null
@@ -23,8 +23,8 @@ export function ProgressBar({ section, cw }: { section: UsageSection; cw: number
   return (
     <Text>
       {section.label.padEnd(10)}{' '}
-      {filled > 0 && <Text color={color}>{'━'.repeat(filled)}</Text>}
-      {unfilled > 0 && <Text dimColor>{'─'.repeat(unfilled)}</Text>}{' '}
+      {filled > 0 && <Text bold color={color}>{'━'.repeat(filled)}</Text>}
+      <Text bold dimColor>{'─'.repeat(unfilled)}</Text>{' '}
       {suffix}
       <Text dimColor>{resetStr}</Text>
     </Text>
