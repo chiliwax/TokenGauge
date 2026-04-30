@@ -72,7 +72,7 @@ export class OpenAiProvider implements Provider {
   readonly displayName: string;
 
   constructor(private auth: Auth, label?: string) {
-    this.displayName = label ? `OpenAI — ${label}` : 'OpenAI';
+    this.displayName = label ?? 'OpenAI';
   }
 
   async fetchUsage(): Promise<ProviderUsage> {
@@ -141,7 +141,7 @@ export class OpenAiProvider implements Provider {
     }
 
     return {
-      providerName: 'OpenAI',
+      providerName: this.displayName,
       plan: data.plan_type,
       sections,
       credits,
@@ -170,7 +170,7 @@ export class OpenAiProvider implements Provider {
     });
 
     return {
-      providerName: 'OpenAI',
+      providerName: this.displayName,
       plan: undefined,
       sections,
       credits: data.total_cost_usd != null ? `$${data.total_cost_usd.toFixed(2)}` : undefined,

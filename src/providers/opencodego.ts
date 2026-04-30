@@ -1,19 +1,15 @@
-import { execSync } from 'node:child_process';
+import { exec } from 'node:child_process';
 import { homedir } from 'node:os';
 import type { Provider, ProviderUsage } from './types.js';
 
 const DB_PATH = `${homedir()}/.local/share/opencode/opencode.db`;
 
-function query(sql: string): string {
-  try {
-    return execSync(`sqlite3 "${DB_PATH}" "${sql}"`, {
-      encoding: 'utf-8',
-      timeout: 5000,
-      stdio: ['pipe', 'pipe', 'pipe'],
+function query(sql: string): Promise<string> {
+  return new Promise((resolve) => {
+    exec(`sqlite3 "${DB_PATH}" "${sql}"`, { encoding: 'utf-8', timeout: 5000 }, (err, stdout) => {
+      resolve(err ? '' : stdout);
     });
-  } catch {
-    return '';
-  }
+  });
 }
 
 function fmt(n: number): string {
@@ -24,10 +20,14 @@ function fmt(n: number): string {
 
 export class OpenCodeGoProvider implements Provider {
   readonly id = 'opencode-go';
-  readonly displayName = 'OpenCode Go';
+  readonly displayName: string;
+
+  constructor(label?: string) {
+    this.displayName = label ?? 'OpenCode Go';
+  }
 
   async fetchUsage(): Promise<ProviderUsage> {
-    const raw = query(`
+    const raw = await query(`
       SELECT
         COUNT(*) as msgs,
         ROUND(SUM(COALESCE(json_extract(m.data, '$.cost'), 0)), 4) as cost,
@@ -42,7 +42,7 @@ export class OpenCodeGoProvider implements Provider {
 
     if (!raw.trim()) {
       return {
-        providerName: 'OpenCode Go',
+        providerName: this.displayName,
         sections: [],
         credits: 'No usage in last 30 days',
       };
@@ -56,7 +56,7 @@ export class OpenCodeGoProvider implements Provider {
     const cache = Number(cols[4] ?? 0);
 
     return {
-      providerName: 'OpenCode Go',
+      providerName: this.displayName,
       plan: 'Last 30 days',
       sections: [
         { label: 'Cost', usedPercent: 0, displayValue: `$${cost.toFixed(2)}` },

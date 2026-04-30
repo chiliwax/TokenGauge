@@ -34,7 +34,7 @@ export class OpenRouterProvider implements Provider {
   readonly displayName: string;
 
   constructor(private apiKey: string, label?: string) {
-    this.displayName = label ? `OpenRouter — ${label}` : 'OpenRouter';
+    this.displayName = label ?? 'OpenRouter';
   }
 
   async fetchUsage(): Promise<ProviderUsage> {
@@ -50,7 +50,7 @@ export class OpenRouterProvider implements Provider {
     const usedPct = Math.min(100, Math.round((used / total) * 100));
 
     return {
-      providerName: 'OpenRouter',
+      providerName: this.displayName,
       plan: `$${remaining.toFixed(2)} remaining`,
       sections: [
         {

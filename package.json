@@ -5,15 +5,20 @@
   "private": true,
   "type": "module",
   "bin": {
-    "tokengauge": "./src/index.ts"
+    "tokengauge": "./src/index.tsx"
   },
   "scripts": {
-    "start": "tsx src/index.ts",
+    "start": "tsx src/index.tsx",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^22",
+    "@types/react": "^19.2.14",
     "tsx": "^4",
     "typescript": "^5"
+  },
+  "dependencies": {
+    "ink": "^7.0.1",
+    "react": "^19.2.5"
   }
 }

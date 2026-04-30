@@ -5,12 +5,12 @@ export class AnthropicProvider implements Provider {
   readonly displayName: string;
 
   constructor(private apiKey: string, label?: string) {
-    this.displayName = label ? `Anthropic — ${label}` : 'Anthropic';
+    this.displayName = label ?? 'Anthropic';
   }
 
   async fetchUsage(): Promise<ProviderUsage> {
     return {
-      providerName: 'Anthropic',
+      providerName: this.displayName,
       sections: [],
       credits: 'API key configured — usage API not yet available',
     };
