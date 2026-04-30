@@ -22,7 +22,8 @@ export function Dashboard({ usages, lastFetchTime, refreshSeconds, onManage, onR
     return () => { stdout.off('resize', onResize); };
   }, [stdout]);
 
-  const cw = (stdout.columns ?? 80) - 4;
+  const termW = stdout.columns ?? 80;
+  const innerW = termW - 2;
 
   useInput((input, key) => {
     if ((key.ctrl && input === 'c') || input === 'q') {
@@ -40,36 +41,22 @@ export function Dashboard({ usages, lastFetchTime, refreshSeconds, onManage, onR
   const remaining = Math.max(0, refreshSeconds - elapsed);
   const timeStr = new Date(lastFetchTime).toLocaleTimeString();
 
-  function Sep() {
-    return <Text dimColor>{'─'.repeat(cw)}</Text>;
-  }
-
-  function SepWithHint(hint: string) {
-    const hintStr = ` ${hint} `;
-    const leftDashes = Math.min(4, cw - hintStr.length - 4);
-    const rightDashes = cw - leftDashes - hintStr.length;
-    return (
-      <Text dimColor>{'─'.repeat(leftDashes)}{hintStr}{'─'.repeat(Math.max(0, rightDashes))}</Text>
-    );
-  }
-
   return (
-    <Box flexDirection="column" paddingLeft={1} paddingRight={1}>
+    <Box flexDirection="column" paddingLeft={1} paddingRight={1} gap={0}>
       <Text>{'✦ '}<Text bold>TokenGauge</Text></Text>
-
-      {SepWithHint('[q] / Ctrl+C to quit')}
+      <Text dimColor>{'─'.repeat(Math.max(0, innerW - 26))} [q] / [Ctrl+C] to quit {'─'.repeat(2)}</Text>
 
       {usages.map((usage) => (
-        <Box key={usage.providerName} flexDirection="column">
-          <Text><Text bold>{usage.providerName}</Text>{usage.plan ? <Text dimColor> — {usage.plan}</Text> : null}</Text>
+        <Box key={usage.providerName} borderStyle="round" flexDirection="column" paddingLeft={1} paddingRight={1} marginTop={1}>
+          <Text bold>{usage.providerName}{usage.plan ? <Text dimColor> — {usage.plan}</Text> : null}</Text>
 
           {usage.error ? (
-            <Text><Text dimColor>Error:</Text> {usage.error}</Text>
+            <Text dimColor>Error: {usage.error}</Text>
           ) : usage.sections.length === 0 ? (
             <Text dimColor>No usage data available</Text>
           ) : (
             usage.sections.map((section, i) => (
-              <ProgressBar key={i} section={section} cw={cw} />
+              <ProgressBar key={i} section={section} cw={innerW - 4} />
             ))
           )}
 
@@ -79,14 +66,15 @@ export function Dashboard({ usages, lastFetchTime, refreshSeconds, onManage, onR
         </Box>
       ))}
 
-      <Sep />
+      <Text dimColor>{'─'.repeat(innerW)}</Text>
 
       <Box>
         <Text>Updated {timeStr}   Next in {remaining}s   </Text>
-        <Text dimColor>[r] reload   [m] manage providers</Text>
+        <Box flexGrow={1} />
+        <Text dimColor>[r] reload   [m] manage</Text>
       </Box>
 
-      <Sep />
+      <Text dimColor>{'─'.repeat(innerW)}</Text>
     </Box>
   );
 }
