@@ -19,6 +19,7 @@ const OPTIONS: MenuOption[] = [
   { id: 'openai', label: 'OpenAI (API key)', provider: 'openai', keyPrefix: 'sk-' },
   { id: 'openrouter', label: 'OpenRouter', provider: 'openrouter', keyPrefix: 'sk-or-' },
   { id: 'anthropic', label: 'Anthropic', provider: 'anthropic', keyPrefix: 'sk-ant-' },
+  { id: 'opencode-go', label: 'OpenCode Go (local DB)', provider: 'opencode-go' },
 ];
 
 type MenuState =
@@ -65,8 +66,14 @@ export function runConnectMenu(): Promise<AccountEntry | null> {
           state = { ...state, cursor: state.cursor + 1 };
           render();
         } else if (key.name === 'enter' || key.name === 'return') {
-          state = { phase: 'input', option: OPTIONS[state.cursor], buffer: '' };
-          render();
+          const opt = OPTIONS[state.cursor];
+          if (opt.provider === 'opencode-go') {
+            cleanup();
+            resolve({ provider: 'opencode-go', key: '' });
+          } else {
+            state = { phase: 'input', option: OPTIONS[state.cursor], buffer: '' };
+            render();
+          }
         } else if (key.name === 'escape') {
           cleanup();
           resolve(null);

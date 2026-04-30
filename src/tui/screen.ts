@@ -11,7 +11,7 @@ export function cleanupScreen(): void {
   if (stdin.isTTY) stdin.setRawMode(false);
 }
 
-export function setupInput(onRefresh: () => void, onConnect?: () => void): () => void {
+export function setupInput(onRefresh: () => void, onManage?: () => void): () => void {
   if (!stdin.isTTY) return () => {};
 
   emitKeypressEvents(stdin);
@@ -24,8 +24,8 @@ export function setupInput(onRefresh: () => void, onConnect?: () => void): () =>
     if (key.name === 'r') {
       onRefresh();
     }
-    if (key.name === 'c' && !key.ctrl && onConnect) {
-      onConnect();
+    if (key.name === 'm' && !key.ctrl && onManage) {
+      onManage();
     }
   };
 

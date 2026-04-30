@@ -78,8 +78,8 @@ export function buildScreen(
   const timeStr = updatedAt.toLocaleTimeString();
   const refreshStr = `Next in ${nextRefresh}s`;
   const reloadStr = `${GRAY}[r] reload${RESET}`;
-  const connectStr = `${GRAY}[c] connect provider${RESET}`;
-  lines.push(`  Updated ${timeStr}   ${refreshStr}   ${reloadStr}   ${connectStr}`);
+  const manageStr = `${GRAY}[m] manage providers${RESET}`;
+  lines.push(`  Updated ${timeStr}   ${refreshStr}   ${reloadStr}   ${manageStr}`);
 
   // Bottom separator
   lines.push(`${GRAY}  ${'─'.repeat(cw)}${RESET}`);
