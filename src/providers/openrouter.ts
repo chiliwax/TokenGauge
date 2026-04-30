@@ -31,9 +31,11 @@ function httpsGet(url: string, headers: Record<string, string>): Promise<string>
 
 export class OpenRouterProvider implements Provider {
   readonly id = 'openrouter';
-  readonly displayName = 'OpenRouter';
+  readonly displayName: string;
 
-  constructor(private apiKey: string) {}
+  constructor(private apiKey: string, label?: string) {
+    this.displayName = label ? `OpenRouter — ${label}` : 'OpenRouter';
+  }
 
   async fetchUsage(): Promise<ProviderUsage> {
     const body = await httpsGet('https://openrouter.ai/api/v1/credits', {

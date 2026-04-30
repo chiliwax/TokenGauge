@@ -27,8 +27,8 @@ export function buildScreen(
   const lines: string[] = [];
 
   // Header
-  const ctrlHint = `${GRAY}Ctrl+C to quit${RESET}`;
-  lines.push(`  ${BOLD}TokenGauge${BOLD_OFF}${' '.repeat(cw - 10 - 14)}${ctrlHint}`);
+  const ctrlHint = `${GRAY}[q] / Ctrl+C to quit${RESET}`;
+  lines.push(`  ${BOLD}TokenGauge${BOLD_OFF}${' '.repeat(cw - 10 - 20)}${ctrlHint}`);
 
   // Separator
   lines.push(`${GRAY}  ${'─'.repeat(cw)}${RESET}`);
@@ -78,7 +78,8 @@ export function buildScreen(
   const timeStr = updatedAt.toLocaleTimeString();
   const refreshStr = `Next in ${nextRefresh}s`;
   const reloadStr = `${GRAY}[r] reload${RESET}`;
-  lines.push(`  Updated ${timeStr}   ${refreshStr}   ${reloadStr}`);
+  const connectStr = `${GRAY}[c] connect provider${RESET}`;
+  lines.push(`  Updated ${timeStr}   ${refreshStr}   ${reloadStr}   ${connectStr}`);
 
   // Bottom separator
   lines.push(`${GRAY}  ${'─'.repeat(cw)}${RESET}`);

@@ -69,9 +69,11 @@ interface ApiKeyResponse {
 
 export class OpenAiProvider implements Provider {
   readonly id = 'openai';
-  readonly displayName = 'OpenAI';
+  readonly displayName: string;
 
-  constructor(private auth: Auth) {}
+  constructor(private auth: Auth, label?: string) {
+    this.displayName = label ? `OpenAI — ${label}` : 'OpenAI';
+  }
 
   async fetchUsage(): Promise<ProviderUsage> {
     if (this.auth.type === 'oauth') {

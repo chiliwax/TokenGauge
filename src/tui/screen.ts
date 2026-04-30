@@ -2,28 +2,33 @@ import { stdin, stdout } from 'node:process';
 import { emitKeypressEvents } from 'node:readline';
 
 export function setupScreen(): void {
-  stdout.write('\x1b[?25l');
+  stdout.write('\x1b[?1049h\x1b[?25l');
   if (stdin.isTTY) stdin.setRawMode(true);
 }
 
 export function cleanupScreen(): void {
-  stdout.write('\x1b[?25h');
+  stdout.write('\x1b[?25h\x1b[?1049l');
   if (stdin.isTTY) stdin.setRawMode(false);
 }
 
-export function setupInput(onRefresh: () => void): void {
-  if (!stdin.isTTY) return;
+export function setupInput(onRefresh: () => void, onConnect?: () => void): () => void {
+  if (!stdin.isTTY) return () => {};
 
   emitKeypressEvents(stdin);
 
-  stdin.on('keypress', (_str: string, key: { name?: string; ctrl?: boolean }) => {
+  const handler = (_str: string, key: { name?: string; ctrl?: boolean }) => {
     if ((key.ctrl && key.name === 'c') || key.name === 'q') {
       cleanupScreen();
-      stdout.write('\x1b[2J\x1b[H');
       process.exit(0);
     }
     if (key.name === 'r') {
       onRefresh();
     }
-  });
+    if (key.name === 'c' && !key.ctrl && onConnect) {
+      onConnect();
+    }
+  };
+
+  stdin.on('keypress', handler);
+  return () => stdin.removeListener('keypress', handler);
 }

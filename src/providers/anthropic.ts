@@ -2,9 +2,11 @@ import type { Provider, ProviderUsage } from './types.js';
 
 export class AnthropicProvider implements Provider {
   readonly id = 'anthropic';
-  readonly displayName = 'Anthropic';
+  readonly displayName: string;
 
-  constructor(private apiKey: string) {}
+  constructor(private apiKey: string, label?: string) {
+    this.displayName = label ? `Anthropic — ${label}` : 'Anthropic';
+  }
 
   async fetchUsage(): Promise<ProviderUsage> {
     return {
