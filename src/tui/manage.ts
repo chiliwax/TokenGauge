@@ -102,10 +102,11 @@ export function runManageMenu(authPath?: string): Promise<boolean> {
         } else {
           for (let i = 0; i < importDetected.length; i++) {
             const d = importDetected[i];
+            const cur = i === cursor ? `${BOLD}>${BOLD_OFF}` : ' ';
             const checked = importSelected.has(i) ? '[✓]' : '[ ]';
             const provider = d.provider.charAt(0).toUpperCase() + d.provider.slice(1);
             const label = d.type === 'oauth' ? `${provider} (OAuth)` : provider;
-            stdout.write(`  ${checked}  ${label}\n`);
+            stdout.write(`  ${cur} ${checked}  ${label}\n`);
           }
           stdout.write(`\n  ${GRAY}[Space] toggle · [Enter] import · [Esc] back${RESET}\n`);
         }
@@ -145,6 +146,12 @@ export function runManageMenu(authPath?: string): Promise<boolean> {
           } else if (item.type === 'import') {
             importDetected = detectFromOpenCode(authPath);
             importSelected = new Set();
+            const existing = loadCredentials();
+            for (let i = 0; i < importDetected.length; i++) {
+              if (existing.some(e => e.key === importDetected[i].key)) {
+                importSelected.add(i);
+              }
+            }
             page = 'import';
             cursor = 0;
             render();
@@ -230,8 +237,11 @@ export function runManageMenu(authPath?: string): Promise<boolean> {
             else importSelected.add(idx);
             render();
         } else if (key.name === 'enter' || key.name === 'return') {
+          const existingKeys = new Set(loadCredentials().map(e => e.key));
           for (const idx of importSelected) {
-            saveAccount(importDetected[idx]);
+            if (!existingKeys.has(importDetected[idx].key)) {
+              saveAccount(importDetected[idx]);
+            }
           }
           accounts = loadCredentials();
           modified = importSelected.size > 0;

@@ -1,10 +1,9 @@
 #!/usr/bin/env tsx
 
 import { stdout } from 'node:process';
-import { existsSync } from 'node:fs';
-import { homedir } from 'node:os';
-import { loadCredentials, saveAccount } from './config.js';
 import type { Auth } from './auth.js';
+import { readAuth, readOpenRouterKey } from './auth.js';
+import { loadCredentials, saveAccount } from './config.js';
 import { OpenAiProvider } from './providers/openai.js';
 import { AnthropicProvider } from './providers/anthropic.js';
 import { OpenCodeGoProvider } from './providers/opencodego.js';
@@ -15,14 +14,6 @@ import { buildScreen } from './tui/renderer.js';
 import type { Provider, ProviderUsage } from './providers/types.js';
 
 const REFRESH_SECONDS = 30;
-
-// One-time migration: auto-add OpenCode Go if local DB exists
-if (existsSync(`${homedir()}/.local/share/opencode/opencode.db`)) {
-  const existing = loadCredentials();
-  if (!existing.some((e) => e.provider === 'opencode-go')) {
-    saveAccount({ provider: 'opencode-go', key: '' });
-  }
-}
 
 function buildProviders(): Provider[] {
   const list: Provider[] = [];
