@@ -5,6 +5,7 @@ export interface UsageSection {
   max?: number;
   remaining?: number;
   resetInSeconds?: number;
+  displayValue?: string;
 }
 
 export interface ProviderUsage {

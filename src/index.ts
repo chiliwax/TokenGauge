@@ -1,9 +1,11 @@
 #!/usr/bin/env tsx
 
 import { stdout } from 'node:process';
-import { readAuth } from './auth.js';
+import { readAuth, readOpenRouterKey } from './auth.js';
 import { OpenAiProvider } from './providers/openai.js';
 import { AnthropicProvider } from './providers/anthropic.js';
+import { OpenCodeGoProvider } from './providers/opencodego.js';
+import { OpenRouterProvider } from './providers/openrouter.js';
 import { setupScreen, setupInput, cleanupScreen } from './tui/screen.js';
 import { buildScreen } from './tui/renderer.js';
 import type { Provider, ProviderUsage } from './providers/types.js';
@@ -37,6 +39,13 @@ try {
 
 if (anthropicKey) {
   providers.push(new AnthropicProvider(anthropicKey));
+}
+
+providers.push(new OpenCodeGoProvider());
+
+const openRouterKey = readOpenRouterKey(cli.authPath ?? '');
+if (openRouterKey) {
+  providers.push(new OpenRouterProvider(openRouterKey));
 }
 
 if (providers.length === 0) {

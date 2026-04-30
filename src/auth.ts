@@ -30,3 +30,29 @@ export function readAuth(customPath: string): Auth {
   }
   throw new Error(`Unknown auth type: ${openai.type}`);
 }
+
+export function readOpenCodeGoKey(customPath: string): string | null {
+  try {
+    const path = customPath || `${homedir()}/.local/share/opencode/auth.json`;
+    const raw = readFileSync(path, 'utf-8');
+    const parsed = JSON.parse(raw);
+    const entry = parsed['opencode-go'];
+    if (entry?.type === 'api' && entry.key) return entry.key;
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+export function readOpenRouterKey(customPath: string): string | null {
+  try {
+    const path = customPath || `${homedir()}/.local/share/opencode/auth.json`;
+    const raw = readFileSync(path, 'utf-8');
+    const parsed = JSON.parse(raw);
+    const entry = parsed.openrouter;
+    if (entry?.type === 'api' && entry.key) return entry.key;
+    return null;
+  } catch {
+    return null;
+  }
+}

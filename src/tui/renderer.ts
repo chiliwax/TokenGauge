@@ -53,12 +53,11 @@ export function buildScreen(
       const filled = Math.min(barW, Math.max(0, Math.floor((section.usedPercent / 100) * barW)));
       const bar = '█'.repeat(filled) + '░'.repeat(barW - filled);
 
-      let suffix: string;
-      if (section.current != null && section.max != null) {
-        suffix = `${section.current}/${section.max}`;
-      } else {
-        suffix = `${section.usedPercent}%`;
-      }
+      const suffix = section.displayValue ?? (
+        section.current != null && section.max != null
+          ? `${section.current}/${section.max}`
+          : `${section.usedPercent}%`
+      );
 
       const resetStr = section.resetInSeconds != null
         ? ` ${GRAY}·${RESET} ${fmtReset(section.resetInSeconds)}`
