@@ -27,7 +27,7 @@ export function Dashboard({ usages, lastFetchTime, refreshSeconds, onManage, onR
     return () => clearInterval(tick);
   }, []);
 
-  const termW = stdout.columns ?? 80;
+  const termW = stdout.columns || 80;
   const innerW = termW - 2;
 
   useInput((input, key) => {

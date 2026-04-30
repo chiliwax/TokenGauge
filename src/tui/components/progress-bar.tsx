@@ -4,13 +4,16 @@ import type { UsageSection } from '../../providers/types.js';
 export function ProgressBar({ section, cw }: { section: UsageSection; cw: number }) {
   const barMax = Math.max(10, cw - 30);
   const barW = Math.min(barMax, 40);
-  const filled = Math.min(barW, Math.max(0, Math.floor((section.usedPercent / 100) * barW)));
-  const bar = '█'.repeat(filled) + '░'.repeat(barW - filled);
+  const pct = section.usedPercent;
+  const filled = Math.min(barW, Math.max(0, Math.floor((pct / 100) * barW)));
+  const unfilled = barW - filled;
+
+  const color = pct >= 80 ? 'red' : pct >= 50 ? 'yellow' : 'green';
 
   const suffix = section.displayValue ?? (
     section.current != null && section.max != null
       ? `${section.current}/${section.max}`
-      : `${section.usedPercent}%`
+      : `${pct}%`
   );
 
   const resetStr = section.resetInSeconds != null
@@ -19,7 +22,11 @@ export function ProgressBar({ section, cw }: { section: UsageSection; cw: number
 
   return (
     <Text>
-      {section.label.padEnd(10)} {bar} {suffix}<Text dimColor>{resetStr}</Text>
+      {section.label.padEnd(10)}{' '}
+      {filled > 0 && <Text color={color}>{'━'.repeat(filled)}</Text>}
+      {unfilled > 0 && <Text dimColor>{'─'.repeat(unfilled)}</Text>}{' '}
+      {suffix}
+      <Text dimColor>{resetStr}</Text>
     </Text>
   );
 }
