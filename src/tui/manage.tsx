@@ -18,7 +18,8 @@ type SubPage =
   | { type: 'connect' };
 
 const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
-  openai: 'OpenAI',
+  chatgpt: 'ChatGPT Plus/Pro',
+  openai: 'OpenAI API',
   openrouter: 'OpenRouter',
   anthropic: 'Anthropic',
   opencode: 'OpenCode Black',
@@ -41,7 +42,12 @@ const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
 };
 
 function fmtLabel(entry: AccountEntry, i: number): string {
-  return entry.label || `${PROVIDER_LABELS[entry.provider]} #${i + 1}`;
+  return entry.label || `${providerLabel(entry)} #${i + 1}`;
+}
+
+function providerLabel(entry: AccountEntry): string {
+  const provider = entry.provider === 'openai' && entry.type === 'oauth' ? 'chatgpt' : entry.provider;
+  return PROVIDER_LABELS[provider];
 }
 
 function keyPreview(key: string): string {
@@ -51,9 +57,10 @@ function keyPreview(key: string): string {
 }
 
 function credentialType(entry: AccountEntry): string {
-  if (entry.provider === 'opencode' || entry.provider === 'opencode-go' || entry.provider === 'perplexity' || entry.provider === 'ollama') return 'Web cookie';
+  if (entry.provider === 'chatgpt' || (entry.provider === 'openai' && entry.type === 'oauth')) return 'OAuth';
+  if (entry.provider === 'opencode' || entry.provider === 'opencode-go' || entry.provider === 'ollama') return 'Web cookie';
   if (entry.provider === 'manus') return 'Session token';
-  return entry.type === 'oauth' ? 'OAuth' : 'API key';
+  return 'API key';
 }
 
 export function ManagePage({ onDone }: ManagePageProps) {
@@ -243,7 +250,7 @@ export function ManagePage({ onDone }: ManagePageProps) {
 
   const renderDetail = () => {
     const entry = accounts[subPage.type === 'detail' ? subPage.index : 0];
-    const provider = PROVIDER_LABELS[entry.provider];
+    const provider = providerLabel(entry);
 
     return (
       <Box flexDirection="column" paddingLeft={2} paddingRight={2}>
@@ -301,7 +308,7 @@ export function ManagePage({ onDone }: ManagePageProps) {
         <Text bold>Import from OpenCode auth.json</Text>
         <Box flexDirection="column" marginTop={1}>
           {importDetected.map((d, i) => {
-            const label = PROVIDER_LABELS[d.provider];
+            const label = providerLabel(d);
             const display = d.type === 'oauth' ? `${label} (OAuth)` : label;
             const checked = importSelection.has(i) ? '[✓]' : '[ ]';
             const cur = i === cursor ? <Text bold>{'>'}</Text> : ' ';
@@ -321,7 +328,7 @@ export function ManagePage({ onDone }: ManagePageProps) {
     return (
       <Box flexDirection="column" paddingLeft={2} paddingRight={2}>
         <Text bold>Import from OpenCode auth.json</Text>
-        <Text dimColor>{'  '}Account name prefix (optional, e.g. &quot;main&quot; → &quot;main-OpenAI&quot;)</Text>
+        <Text dimColor>{'  '}Account name prefix (optional, e.g. &quot;main&quot; → &quot;main-ChatGPT Plus/Pro&quot;)</Text>
         <Box marginTop={1}>
           <Text>{'  '}{buffer}<Text bold>{'_'}</Text></Text>
         </Box>

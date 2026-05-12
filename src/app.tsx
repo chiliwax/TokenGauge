@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import { loadCredentials } from './config.js';
-import type { Auth } from './auth.js';
-import { OpenAiProvider } from './providers/openai.js';
+import { loadCredentials, updateAccount } from './config.js';
+import { ChatGptProvider, OpenAiProvider } from './providers/openai.js';
 import { AnthropicProvider } from './providers/anthropic.js';
 import { OpenCodeProvider } from './providers/opencode.js';
 import { OpenCodeGoProvider } from './providers/opencodego.js';
@@ -31,12 +30,26 @@ function buildProviders(): Provider[] {
   const list: Provider[] = [];
   const creds = loadCredentials();
 
-  for (const entry of creds) {
-    if (entry.provider === 'openai') {
-      const auth: Auth = entry.type === 'oauth'
-        ? { type: 'oauth', access: entry.key, accountId: entry.accountId }
-        : { type: 'apiKey', key: entry.key };
-      list.push(new OpenAiProvider(auth, entry.label));
+  for (const [index, entry] of creds.entries()) {
+    if (entry.provider === 'chatgpt' || (entry.provider === 'openai' && entry.type === 'oauth')) {
+      list.push(new ChatGptProvider(
+        {
+          type: 'oauth',
+          access: entry.key,
+          accountId: entry.accountId,
+          refresh: entry.refresh,
+          expires: entry.expires,
+        },
+        entry.label,
+        (auth) => updateAccount(index, {
+          key: auth.access,
+          accountId: auth.accountId,
+          refresh: auth.refresh,
+          expires: auth.expires,
+        }),
+      ));
+    } else if (entry.provider === 'openai') {
+      list.push(new OpenAiProvider(entry.key, entry.label));
     } else if (entry.provider === 'openrouter') {
       list.push(new OpenRouterProvider(entry.key, entry.label));
     } else if (entry.provider === 'anthropic') {

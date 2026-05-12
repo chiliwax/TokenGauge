@@ -108,7 +108,7 @@ Configure `z.ai` from the manage screen with your API key, or set `ZAI_API_KEY`.
 
 ### Perplexity
 
-Configure `Perplexity` from the manage screen with your session cookie, or set `PERPLEXITY_COOKIE`. See [Cookie-based providers](#cookie-based-providers) for how to get your cookie.
+Configure `Perplexity` from the manage screen with your API key. Perplexity does not currently expose account usage or billing credits through a public API endpoint, so TokenGauge only confirms the key is configured.
 
 ### Manus
 
@@ -137,7 +137,7 @@ Some providers require a session cookie instead of an API key. To get your cooki
 1. Open your browser's Developer Tools (F12)
 2. Go to the **Network** tab
 3. Sign in to the provider's website and navigate to the usage/settings page
-4. Find any request to the provider's domain (e.g., `opencode.ai`, `perplexity.ai`, `ollama.com`)
+4. Find any request to the provider's domain (e.g., `opencode.ai`, `ollama.com`)
 5. Right-click the request → **Copy** → **Copy as cURL (bash)**
 6. Paste the copied command and extract the `Cookie:` header value
 7. In TokenGauge, select the provider and paste the cookie header when prompted

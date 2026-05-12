@@ -2,10 +2,12 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 
 export interface AccountEntry {
-  provider: 'openai' | 'openrouter' | 'anthropic' | 'opencode' | 'opencode-go' | 'deepseek' | 'venice' | 'moonshot' | 'crof' | 'warp' | 'copilot' | 'synthetic' | 'codebuff' | 'zai' | 'perplexity' | 'manus' | 'doubao' | 'kilo' | 'minimax' | 'ollama';
+  provider: 'chatgpt' | 'openai' | 'openrouter' | 'anthropic' | 'opencode' | 'opencode-go' | 'deepseek' | 'venice' | 'moonshot' | 'crof' | 'warp' | 'copilot' | 'synthetic' | 'codebuff' | 'zai' | 'perplexity' | 'manus' | 'doubao' | 'kilo' | 'minimax' | 'ollama';
   key: string;
   type?: string;
   accountId?: string;
+  refresh?: string;
+  expires?: number;
   label?: string;
   workspaceId?: string;
 }
@@ -58,8 +60,15 @@ export function detectFromOpenCode(customPath?: string): AccountEntry[] {
     const accounts: AccountEntry[] = [];
     const o = parsed.openai;
     if (o?.type === 'oauth' && o.access) {
-      accounts.push({ provider: 'openai', key: o.access, type: 'oauth', accountId: o.accountId });
-    } else if (o?.type === 'apiKey' && o.key) {
+      accounts.push({
+        provider: 'chatgpt',
+        key: o.access,
+        type: 'oauth',
+        ...(typeof o.accountId === 'string' ? { accountId: o.accountId } : {}),
+        ...(typeof o.refresh === 'string' ? { refresh: o.refresh } : {}),
+        ...(typeof o.expires === 'number' ? { expires: o.expires } : {}),
+      });
+    } else if ((o?.type === 'api' || o?.type === 'apiKey') && o.key) {
       accounts.push({ provider: 'openai', key: o.key });
     }
     const or = parsed.openrouter;

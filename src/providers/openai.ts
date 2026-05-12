@@ -1,6 +1,7 @@
 import { request } from 'node:https';
 import type { Provider, ProviderUsage } from './types.js';
-import type { Auth, OAuthAuth, ApiKeyAuth } from '../auth.js';
+import type { OAuthAuth } from '../auth.js';
+import { refreshChatGptAccessToken } from '../openai-oauth.js';
 
 function httpsGet(url: string, headers: Record<string, string>): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -46,43 +47,20 @@ interface OAuthResponse {
   };
 }
 
-// ── API key response types ────────────────────────────────────────
-
-interface ApiKeyLimit {
-  limit_type?: string;
-  limit_window?: string;
-  max_value?: number;
-  current_value?: number;
-  remaining_value?: number;
-  model_filter?: string | null;
-  reset_at?: string;
-}
-
-interface ApiKeyResponse {
-  request_count?: number;
-  total_tokens?: number;
-  total_cost_usd?: number;
-  limits?: ApiKeyLimit[];
-}
-
-// ── Provider ──────────────────────────────────────────────────────
-
-export class OpenAiProvider implements Provider {
-  readonly id = 'openai';
+export class ChatGptProvider implements Provider {
+  readonly id = 'chatgpt';
   readonly displayName: string;
 
-  constructor(private auth: Auth, label?: string) {
-    this.displayName = label ?? 'OpenAI';
+  constructor(
+    private auth: OAuthAuth,
+    label?: string,
+    private onRefresh?: (auth: OAuthAuth) => void,
+  ) {
+    this.displayName = label ?? 'ChatGPT Plus/Pro';
   }
 
   async fetchUsage(): Promise<ProviderUsage> {
-    if (this.auth.type === 'oauth') {
-      return this.fetchOAuth(this.auth);
-    }
-    return this.fetchApiKey(this.auth);
-  }
-
-  private async fetchOAuth(auth: OAuthAuth): Promise<ProviderUsage> {
+    const auth = await this.currentAuth();
     const headers: Record<string, string> = {
       Authorization: `Bearer ${auth.access}`,
     };
@@ -148,32 +126,39 @@ export class OpenAiProvider implements Provider {
     };
   }
 
-  private async fetchApiKey(auth: ApiKeyAuth): Promise<ProviderUsage> {
-    const headers: Record<string, string> = {
-      Authorization: `Bearer ${auth.key}`,
+  private async currentAuth(): Promise<OAuthAuth> {
+    if (!this.auth.refresh || !this.auth.expires || this.auth.expires > Date.now() + 60_000) {
+      return this.auth;
+    }
+
+    const refreshed = await refreshChatGptAccessToken(this.auth.refresh);
+    this.auth = {
+      type: 'oauth',
+      access: refreshed.key,
+      accountId: refreshed.accountId ?? this.auth.accountId,
+      refresh: refreshed.refresh ?? this.auth.refresh,
+      expires: refreshed.expires,
     };
-    const body = await httpsGet('https://api.openai.com/v1/usage', headers);
-    const data: ApiKeyResponse = JSON.parse(body);
+    this.onRefresh?.(this.auth);
+    return this.auth;
+  }
+}
 
-    const sections = (data.limits ?? []).map((l) => {
-      const label = l.model_filter
-        ? `${l.model_filter} (${l.limit_window})`
-        : `${l.limit_type ?? 'limit'} (${l.limit_window})`;
-      const maxVal = l.max_value ?? 100;
-      return {
-        label,
-        usedPercent: maxVal > 0 ? Math.round(((l.current_value ?? 0) / maxVal) * 100) : 0,
-        current: l.current_value,
-        max: l.max_value,
-        remaining: l.remaining_value,
-      };
-    });
+export class OpenAiProvider implements Provider {
+  readonly id = 'openai';
+  readonly displayName: string;
 
+  constructor(private apiKey: string, label?: string) {
+    this.displayName = label ?? 'OpenAI API';
+  }
+
+  async fetchUsage(): Promise<ProviderUsage> {
     return {
       providerName: this.displayName,
-      plan: undefined,
-      sections,
-      credits: data.total_cost_usd != null ? `$${data.total_cost_usd.toFixed(2)}` : undefined,
+      sections: [],
+      credits: this.apiKey
+        ? 'API key configured — OpenAI API usage requires an organization/admin usage endpoint'
+        : 'API key missing',
     };
   }
 }

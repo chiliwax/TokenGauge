@@ -5,6 +5,8 @@ export interface OAuthAuth {
   type: 'oauth';
   access: string;
   accountId?: string;
+  refresh?: string;
+  expires?: number;
 }
 
 export interface ApiKeyAuth {
@@ -22,9 +24,15 @@ export function readAuth(customPath: string): Auth {
   if (!openai) throw new Error('No "openai" key found in auth file');
   if (openai.type === 'oauth') {
     if (!openai.access) throw new Error('OAuth auth missing "access" token');
-    return { type: 'oauth', access: openai.access, accountId: openai.accountId };
+    return {
+      type: 'oauth',
+      access: openai.access,
+      accountId: openai.accountId,
+      refresh: openai.refresh,
+      expires: openai.expires,
+    };
   }
-  if (openai.type === 'apiKey') {
+  if (openai.type === 'api' || openai.type === 'apiKey') {
     if (!openai.key) throw new Error('API key auth missing "key"');
     return { type: 'apiKey', key: openai.key };
   }
