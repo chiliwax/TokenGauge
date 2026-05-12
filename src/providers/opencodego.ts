@@ -1,70 +1,61 @@
-import { exec } from 'node:child_process';
-import { homedir } from 'node:os';
-import type { Provider, ProviderUsage } from './types.js';
-
-const DB_PATH = `${homedir()}/.local/share/opencode/opencode.db`;
-
-function query(sql: string): Promise<string> {
-  return new Promise((resolve) => {
-    exec(`sqlite3 "${DB_PATH}" "${sql}"`, { encoding: 'utf-8', timeout: 5000 }, (err, stdout) => {
-      resolve(err ? '' : stdout);
-    });
-  });
-}
-
-function fmt(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return String(Math.round(n));
-}
+import type { Provider, ProviderUsage, UsageSection } from './types.js';
+import {
+  fetchOpenCodeGoUsageText,
+  normalizeOpenCodeCookieHeader,
+  parseOpenCodeGoSubscription,
+  resolveOpenCodeWorkspaceId,
+} from './opencode-web.js';
 
 export class OpenCodeGoProvider implements Provider {
   readonly id = 'opencode-go';
   readonly displayName: string;
 
-  constructor(label?: string) {
+  constructor(
+    private cookieHeader: string,
+    private workspaceId?: string,
+    label?: string,
+  ) {
     this.displayName = label ?? 'OpenCode Go';
   }
 
   async fetchUsage(): Promise<ProviderUsage> {
-    const raw = await query(`
-      SELECT
-        COUNT(*) as msgs,
-        ROUND(SUM(COALESCE(json_extract(m.data, '$.cost'), 0)), 4) as cost,
-        SUM(COALESCE(json_extract(m.data, '$.tokens.input'), 0)) as inp,
-        SUM(COALESCE(json_extract(m.data, '$.tokens.output'), 0)) as out,
-        SUM(COALESCE(json_extract(m.data, '$.tokens.cache.read'), 0)) as cache_r
-      FROM message m
-      WHERE json_extract(m.data, '$.providerID') = 'opencode-go'
-        AND json_extract(m.data, '$.cost') IS NOT NULL
-        AND m.time_created > (strftime('%s','now') - 2592000) * 1000
-    `);
-
-    if (!raw.trim()) {
-      return {
-        providerName: this.displayName,
-        sections: [],
-        credits: 'No usage in last 30 days',
-      };
+    if (this.cookieHeader.trim() === 'local') {
+      throw new Error('OpenCode Go local DB tracking was replaced by live web quota tracking. Reconnect OpenCode Go with an opencode.ai Cookie header.');
     }
 
-    const cols = raw.trim().split('|');
-    const msgs = Number(cols[0] ?? 0);
-    const cost = Number(cols[1] ?? 0);
-    const inp = Number(cols[2] ?? 0);
-    const out = Number(cols[3] ?? 0);
-    const cache = Number(cols[4] ?? 0);
+    const cookie = normalizeOpenCodeCookieHeader(this.cookieHeader);
+    if (!cookie) {
+      throw new Error('OpenCode Go session cookie is empty or invalid. Reconnect with a Cookie header from opencode.ai, or paste the raw auth cookie value.');
+    }
+
+    const workspaceId = await resolveOpenCodeWorkspaceId(cookie, this.workspaceId);
+    const text = await fetchOpenCodeGoUsageText(cookie, workspaceId);
+    const usage = parseOpenCodeGoSubscription(text);
+
+    const sections: UsageSection[] = [
+      {
+        label: '5h window',
+        usedPercent: usage.rollingUsage.usedPercent,
+        resetInSeconds: usage.rollingUsage.resetInSeconds,
+      },
+      {
+        label: 'Weekly',
+        usedPercent: usage.weeklyUsage.usedPercent,
+        resetInSeconds: usage.weeklyUsage.resetInSeconds,
+      },
+    ];
+
+    if (usage.monthlyUsage) {
+      sections.push({
+        label: 'Monthly',
+        usedPercent: usage.monthlyUsage.usedPercent,
+        resetInSeconds: usage.monthlyUsage.resetInSeconds,
+      });
+    }
 
     return {
       providerName: this.displayName,
-      plan: 'Last 30 days',
-      sections: [
-        { label: 'Cost', usedPercent: 0, displayValue: `$${cost.toFixed(2)}` },
-        { label: 'Messages', usedPercent: 0, displayValue: String(msgs) },
-        { label: 'Input', usedPercent: 0, displayValue: fmt(inp) },
-        { label: 'Output', usedPercent: 0, displayValue: fmt(out) },
-        { label: 'Cache Read', usedPercent: 0, displayValue: fmt(cache) },
-      ],
+      sections,
     };
   }
 }

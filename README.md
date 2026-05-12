@@ -48,6 +48,14 @@ If `auth.json` has an `apiKey` entry, or if you manually configure one, TokenGau
 
 Pass `--anthropic-key <key>` or set `ANTHROPIC_API_KEY`. Anthropic doesn't currently expose a usage API — shows a placeholder until they ship one.
 
+### OpenCode
+
+Configure `OpenCode (web cookie)` from the manage screen, or set `OPENCODE_COOKIE` to a `Cookie:` header from `opencode.ai`. Optional workspace override: `OPENCODE_WORKSPACE_ID` or `CODEXBAR_OPENCODE_WORKSPACE_ID`.
+
+### OpenCode Go
+
+Configure `OpenCode Go (web cookie)` from the manage screen, or set `OPENCODE_GO_COOKIE`. If unset, it falls back to `OPENCODE_COOKIE`. Optional workspace override: `OPENCODE_GO_WORKSPACE_ID` or `CODEXBAR_OPENCODEGO_WORKSPACE_ID`.
+
 ### Adding a new provider
 
 Implement the `Provider` interface in `src/providers/types.ts`:

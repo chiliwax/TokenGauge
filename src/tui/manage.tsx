@@ -17,13 +17,27 @@ type SubPage =
   | { type: 'import-prefix' }
   | { type: 'connect' };
 
+const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
+  openai: 'OpenAI',
+  openrouter: 'OpenRouter',
+  anthropic: 'Anthropic',
+  opencode: 'OpenCode',
+  'opencode-go': 'OpenCode Go',
+};
+
 function fmtLabel(entry: AccountEntry, i: number): string {
-  return entry.label || `${entry.provider.charAt(0).toUpperCase() + entry.provider.slice(1)} #${i + 1}`;
+  return entry.label || `${PROVIDER_LABELS[entry.provider]} #${i + 1}`;
 }
 
 function keyPreview(key: string): string {
+  if (key === 'local') return 'local (reconnect required)';
   if (key.length <= 12) return key;
   return key.slice(0, 8) + '...' + key.slice(-4);
+}
+
+function credentialType(entry: AccountEntry): string {
+  if (entry.provider === 'opencode' || entry.provider === 'opencode-go') return 'Web cookie';
+  return entry.type === 'oauth' ? 'OAuth' : 'API key';
 }
 
 export function ManagePage({ onDone }: ManagePageProps) {
@@ -138,7 +152,7 @@ export function ManagePage({ onDone }: ManagePageProps) {
         for (const idx of importSelection) {
           const entry = { ...importDetected[idx] };
           if (prefix) {
-            entry.label = `${prefix}-OpenAI`;
+            entry.label = `${prefix}-${PROVIDER_LABELS[entry.provider]}`;
           }
           saveAccount(entry);
         }
@@ -213,7 +227,7 @@ export function ManagePage({ onDone }: ManagePageProps) {
 
   const renderDetail = () => {
     const entry = accounts[subPage.type === 'detail' ? subPage.index : 0];
-    const provider = entry.provider.charAt(0).toUpperCase() + entry.provider.slice(1);
+    const provider = PROVIDER_LABELS[entry.provider];
 
     return (
       <Box flexDirection="column" paddingLeft={2} paddingRight={2}>
@@ -221,7 +235,8 @@ export function ManagePage({ onDone }: ManagePageProps) {
         <Text dimColor>{'  '}{'─'.repeat(40)}</Text>
         <Text>{'  '}Provider:  {provider}</Text>
         <Text>{'  '}Key:       {keyPreview(entry.key)}</Text>
-        <Text>{'  '}Type:      {entry.type === 'oauth' ? 'OAuth' : 'API key'}</Text>
+        <Text>{'  '}Type:      {credentialType(entry)}</Text>
+        {entry.workspaceId ? <Text>{'  '}Workspace: {entry.workspaceId}</Text> : null}
         <Box marginTop={1}>
           <Text>{'  '}<Text bold>[e]</Text> Edit label  <Text bold>[d]</Text> Remove  <Text dimColor>[Esc] back</Text></Text>
         </Box>
@@ -270,7 +285,7 @@ export function ManagePage({ onDone }: ManagePageProps) {
         <Text bold>Import from OpenCode auth.json</Text>
         <Box flexDirection="column" marginTop={1}>
           {importDetected.map((d, i) => {
-            const label = d.provider.charAt(0).toUpperCase() + d.provider.slice(1);
+            const label = PROVIDER_LABELS[d.provider];
             const display = d.type === 'oauth' ? `${label} (OAuth)` : label;
             const checked = importSelection.has(i) ? '[✓]' : '[ ]';
             const cur = i === cursor ? <Text bold>{'>'}</Text> : ' ';

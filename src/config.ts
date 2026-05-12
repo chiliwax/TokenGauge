@@ -2,11 +2,12 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 
 export interface AccountEntry {
-  provider: 'openai' | 'openrouter' | 'anthropic' | 'opencode-go';
+  provider: 'openai' | 'openrouter' | 'anthropic' | 'opencode' | 'opencode-go';
   key: string;
   type?: string;
   accountId?: string;
   label?: string;
+  workspaceId?: string;
 }
 
 interface ConfigFile {

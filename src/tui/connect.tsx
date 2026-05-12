@@ -10,20 +10,36 @@ const PROVIDERS: { value: AccountEntry['provider']; label: string }[] = [
   { value: 'openai', label: 'OpenAI (API key)' },
   { value: 'openrouter', label: 'OpenRouter' },
   { value: 'anthropic', label: 'Anthropic' },
-  { value: 'opencode-go', label: 'OpenCode Go (local DB)' },
+  { value: 'opencode', label: 'OpenCode (web cookie)' },
+  { value: 'opencode-go', label: 'OpenCode Go (web cookie)' },
 ];
 
 const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   openai: 'OpenAI',
   openrouter: 'OpenRouter',
   anthropic: 'Anthropic',
+  opencode: 'OpenCode',
   'opencode-go': 'OpenCode Go',
 };
 
 type Phase =
   | { type: 'select' }
   | { type: 'input'; provider: AccountEntry['provider'] }
-  | { type: 'label'; provider: AccountEntry['provider']; key: string };
+  | { type: 'workspace'; provider: AccountEntry['provider']; key: string }
+  | { type: 'label'; provider: AccountEntry['provider']; key: string; workspaceId?: string };
+
+function usesCookie(provider: AccountEntry['provider']): boolean {
+  return provider === 'opencode' || provider === 'opencode-go';
+}
+
+function buildEntry(phase: Extract<Phase, { type: 'label' }>, label?: string): AccountEntry {
+  return {
+    provider: phase.provider,
+    key: phase.key,
+    ...(label ? { label } : {}),
+    ...(phase.workspaceId ? { workspaceId: phase.workspaceId } : {}),
+  };
+}
 
 export function ConnectPage({ onDone }: ConnectPageProps) {
   const { exit } = useApp();
@@ -39,11 +55,7 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
         setCursor(cursor + 1);
       } else if (key.return) {
         const provider = PROVIDERS[cursor].value;
-        if (provider === 'opencode-go') {
-          setPhase({ type: 'label', provider, key: 'local' });
-        } else {
-          setPhase({ type: 'input', provider });
-        }
+        setPhase({ type: 'input', provider });
         setCursor(0);
         setBuffer('');
       } else if (key.escape) {
@@ -56,7 +68,26 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
         setPhase({ type: 'select' });
         setBuffer('');
       } else if (key.return && buffer.trim()) {
-        setPhase({ type: 'label', provider: phase.provider, key: buffer.trim() });
+        if (usesCookie(phase.provider)) {
+          setPhase({ type: 'workspace', provider: phase.provider, key: buffer.trim() });
+        } else {
+          setPhase({ type: 'label', provider: phase.provider, key: buffer.trim() });
+        }
+        setBuffer('');
+      } else if (key.backspace) {
+        setBuffer(buffer.slice(0, -1));
+      } else if ((key.ctrl && input === 'c') || input === 'q') {
+        exit();
+      } else if (!key.ctrl && input) {
+        setBuffer(buffer + input);
+      }
+    } else if (phase.type === 'workspace') {
+      if (key.escape) {
+        setPhase({ type: 'label', provider: phase.provider, key: phase.key });
+        setBuffer('');
+      } else if (key.return) {
+        const workspaceId = buffer.trim() || undefined;
+        setPhase({ type: 'label', provider: phase.provider, key: phase.key, workspaceId });
         setBuffer('');
       } else if (key.backspace) {
         setBuffer(buffer.slice(0, -1));
@@ -67,17 +98,11 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
       }
     } else if (phase.type === 'label') {
       if (key.escape) {
-        const entry: AccountEntry = phase.provider === 'opencode-go'
-          ? { provider: 'opencode-go', key: 'local' }
-          : { provider: phase.provider, key: phase.key };
-        onDone(entry);
+        onDone(buildEntry(phase));
       } else if (key.return) {
         const prefix = buffer.trim();
         const label = prefix ? `${prefix}-${PROVIDER_LABELS[phase.provider]}` : undefined;
-        const entry: AccountEntry = phase.provider === 'opencode-go'
-          ? { provider: 'opencode-go', key: 'local', label }
-          : { provider: phase.provider, key: phase.key, label };
-        onDone(entry);
+        onDone(buildEntry(phase, label));
       } else if (key.backspace) {
         setBuffer(buffer.slice(0, -1));
       } else if ((key.ctrl && input === 'c') || input === 'q') {
@@ -106,11 +131,22 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
 
       {phase.type === 'input' && (
         <>
-          <Text bold>Enter your {PROVIDER_LABELS[phase.provider]} API key</Text>
+          <Text bold>{usesCookie(phase.provider) ? `Paste your ${PROVIDER_LABELS[phase.provider]} Cookie header or auth cookie value` : `Enter your ${PROVIDER_LABELS[phase.provider]} API key`}</Text>
           <Box marginTop={1}>
             <Text>{'  '}{buffer}<Text bold>{'_'}</Text></Text>
           </Box>
           <Text dimColor>{'  '}Enter confirm · Esc cancel</Text>
+        </>
+      )}
+
+      {phase.type === 'workspace' && (
+        <>
+          <Text bold>Workspace ID or URL (optional)</Text>
+          <Text dimColor>{'  '}Use wrk_... or https://opencode.ai/workspace/...; leave blank to use the first workspace.</Text>
+          <Box marginTop={1}>
+            <Text>{'  '}{buffer}<Text bold>{'_'}</Text></Text>
+          </Box>
+          <Text dimColor>{'  '}Enter confirm · Esc skip</Text>
         </>
       )}
 

@@ -3,6 +3,7 @@ import { loadCredentials } from './config.js';
 import type { Auth } from './auth.js';
 import { OpenAiProvider } from './providers/openai.js';
 import { AnthropicProvider } from './providers/anthropic.js';
+import { OpenCodeProvider } from './providers/opencode.js';
 import { OpenCodeGoProvider } from './providers/opencodego.js';
 import { OpenRouterProvider } from './providers/openrouter.js';
 import type { Provider, ProviderUsage } from './providers/types.js';
@@ -25,12 +26,48 @@ function buildProviders(): Provider[] {
       list.push(new OpenRouterProvider(entry.key, entry.label));
     } else if (entry.provider === 'anthropic') {
       list.push(new AnthropicProvider(entry.key, entry.label));
+    } else if (entry.provider === 'opencode') {
+      list.push(new OpenCodeProvider(
+        entry.key,
+        entry.workspaceId ?? opencodeWorkspaceEnv(),
+        entry.label,
+      ));
     } else if (entry.provider === 'opencode-go') {
-      list.push(new OpenCodeGoProvider(entry.label));
+      list.push(new OpenCodeGoProvider(
+        entry.key,
+        entry.workspaceId ?? opencodeGoWorkspaceEnv(),
+        entry.label,
+      ));
     }
   }
 
+  if (!creds.some((entry) => entry.provider === 'opencode') && process.env.OPENCODE_COOKIE) {
+    list.push(new OpenCodeProvider(
+      process.env.OPENCODE_COOKIE,
+      opencodeWorkspaceEnv(),
+    ));
+  }
+
+  const opencodeGoCookie = process.env.OPENCODE_GO_COOKIE ?? process.env.OPENCODE_COOKIE;
+  if (!creds.some((entry) => entry.provider === 'opencode-go') && opencodeGoCookie) {
+    list.push(new OpenCodeGoProvider(
+      opencodeGoCookie,
+      opencodeGoWorkspaceEnv(),
+    ));
+  }
+
   return list;
+}
+
+function opencodeWorkspaceEnv(): string | undefined {
+  return process.env.OPENCODE_WORKSPACE_ID
+    ?? process.env.CODEXBAR_OPENCODE_WORKSPACE_ID;
+}
+
+function opencodeGoWorkspaceEnv(): string | undefined {
+  return process.env.OPENCODE_GO_WORKSPACE_ID
+    ?? process.env.CODEXBAR_OPENCODEGO_WORKSPACE_ID
+    ?? opencodeWorkspaceEnv();
 }
 
 export function App() {
