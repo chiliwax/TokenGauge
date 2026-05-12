@@ -6,27 +6,29 @@ interface ConnectPageProps {
   onDone: (result: AccountEntry | null) => void;
 }
 
-const PROVIDER_ROWS: { value: AccountEntry['provider']; label: string }[] = [
-  { value: 'openai', label: 'OpenAI' },
-  { value: 'openrouter', label: 'OpenRouter' },
-  { value: 'anthropic', label: 'Anthropic' },
-  { value: 'opencode', label: 'OpenCode Black' },
-  { value: 'opencode-go', label: 'OpenCode Go' },
-  { value: 'deepseek', label: 'DeepSeek' },
-  { value: 'venice', label: 'Venice' },
-  { value: 'moonshot', label: 'Moonshot' },
-  { value: 'crof', label: 'Crof' },
-  { value: 'warp', label: 'Warp' },
-  { value: 'copilot', label: 'Copilot' },
-  { value: 'synthetic', label: 'Synthetic' },
-  { value: 'codebuff', label: 'Codebuff' },
-  { value: 'zai', label: 'z.ai' },
-  { value: 'perplexity', label: 'Perplexity' },
-  { value: 'manus', label: 'Manus' },
-  { value: 'doubao', label: 'Doubao' },
-  { value: 'kilo', label: 'Kilo' },
-  { value: 'minimax', label: 'MiniMax' },
-  { value: 'ollama', label: 'Ollama' },
+type AuthType = 'API key' | 'Cookie' | 'GitHub token' | 'Session token' | 'API key / OAuth';
+
+const PROVIDER_ROWS: { value: AccountEntry['provider']; label: string; auth: AuthType }[] = [
+  { value: 'openai', label: 'OpenAI', auth: 'API key / OAuth' },
+  { value: 'openrouter', label: 'OpenRouter', auth: 'API key' },
+  { value: 'anthropic', label: 'Anthropic', auth: 'API key' },
+  { value: 'opencode', label: 'OpenCode Black', auth: 'Cookie' },
+  { value: 'opencode-go', label: 'OpenCode Go', auth: 'Cookie' },
+  { value: 'deepseek', label: 'DeepSeek', auth: 'API key' },
+  { value: 'venice', label: 'Venice', auth: 'API key' },
+  { value: 'moonshot', label: 'Moonshot', auth: 'API key' },
+  { value: 'crof', label: 'Crof', auth: 'API key' },
+  { value: 'warp', label: 'Warp', auth: 'API key' },
+  { value: 'copilot', label: 'Copilot', auth: 'GitHub token' },
+  { value: 'synthetic', label: 'Synthetic', auth: 'API key' },
+  { value: 'codebuff', label: 'Codebuff', auth: 'API key' },
+  { value: 'zai', label: 'z.ai', auth: 'API key' },
+  { value: 'perplexity', label: 'Perplexity', auth: 'Cookie' },
+  { value: 'manus', label: 'Manus', auth: 'Session token' },
+  { value: 'doubao', label: 'Doubao', auth: 'API key' },
+  { value: 'kilo', label: 'Kilo', auth: 'API key' },
+  { value: 'minimax', label: 'MiniMax', auth: 'API key' },
+  { value: 'ollama', label: 'Ollama', auth: 'Cookie' },
 ];
 const PROVIDERS = [...PROVIDER_ROWS].sort((a, b) => a.label.localeCompare(b.label));
 
@@ -165,7 +167,7 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
           <Box flexDirection="column" marginTop={1}>
             {PROVIDERS.map((p, i) => (
               <Text key={p.value}>
-                {'  '}{i === cursor ? <Text bold>{'>'}</Text> : ' '} {p.label}
+                {'  '}{i === cursor ? <Text bold>{'>'}</Text> : ' '} {p.label} <Text dimColor>({p.auth})</Text>
               </Text>
             ))}
           </Box>
