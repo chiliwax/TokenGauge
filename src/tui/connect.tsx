@@ -12,6 +12,18 @@ const PROVIDERS: { value: AccountEntry['provider']; label: string }[] = [
   { value: 'anthropic', label: 'Anthropic' },
   { value: 'opencode', label: 'OpenCode (web cookie)' },
   { value: 'opencode-go', label: 'OpenCode Go (web cookie)' },
+  { value: 'deepseek', label: 'DeepSeek' },
+  { value: 'venice', label: 'Venice' },
+  { value: 'moonshot', label: 'Moonshot' },
+  { value: 'crof', label: 'Crof' },
+  { value: 'kimik2', label: 'Kimi K2' },
+  { value: 'warp', label: 'Warp' },
+  { value: 'copilot', label: 'Copilot' },
+  { value: 'synthetic', label: 'Synthetic' },
+  { value: 'codebuff', label: 'Codebuff' },
+  { value: 'zai', label: 'z.ai' },
+  { value: 'perplexity', label: 'Perplexity (cookie)' },
+  { value: 'manus', label: 'Manus (token)' },
 ];
 
 const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
@@ -20,6 +32,18 @@ const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   anthropic: 'Anthropic',
   opencode: 'OpenCode',
   'opencode-go': 'OpenCode Go',
+  deepseek: 'DeepSeek',
+  venice: 'Venice',
+  moonshot: 'Moonshot',
+  crof: 'Crof',
+  kimik2: 'Kimi K2',
+  warp: 'Warp',
+  copilot: 'Copilot',
+  synthetic: 'Synthetic',
+  codebuff: 'Codebuff',
+  zai: 'z.ai',
+  perplexity: 'Perplexity',
+  manus: 'Manus',
 };
 
 type Phase =
@@ -29,7 +53,7 @@ type Phase =
   | { type: 'label'; provider: AccountEntry['provider']; key: string; workspaceId?: string };
 
 function usesCookie(provider: AccountEntry['provider']): boolean {
-  return provider === 'opencode' || provider === 'opencode-go';
+  return provider === 'opencode' || provider === 'opencode-go' || provider === 'perplexity';
 }
 
 function buildEntry(phase: Extract<Phase, { type: 'label' }>, label?: string): AccountEntry {

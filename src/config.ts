@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { homedir } from 'node:os';
 
 export interface AccountEntry {
-  provider: 'openai' | 'openrouter' | 'anthropic' | 'opencode' | 'opencode-go';
+  provider: 'openai' | 'openrouter' | 'anthropic' | 'opencode' | 'opencode-go' | 'deepseek' | 'venice' | 'moonshot' | 'crof' | 'kimik2' | 'warp' | 'copilot' | 'synthetic' | 'codebuff' | 'zai' | 'perplexity' | 'manus';
   key: string;
   type?: string;
   accountId?: string;

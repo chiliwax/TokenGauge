@@ -6,6 +6,18 @@ import { AnthropicProvider } from './providers/anthropic.js';
 import { OpenCodeProvider } from './providers/opencode.js';
 import { OpenCodeGoProvider } from './providers/opencodego.js';
 import { OpenRouterProvider } from './providers/openrouter.js';
+import { DeepSeekProvider } from './providers/deepseek.js';
+import { VeniceProvider } from './providers/venice.js';
+import { MoonshotProvider } from './providers/moonshot.js';
+import { CrofProvider } from './providers/crof.js';
+import { KimiK2Provider } from './providers/kimik2.js';
+import { WarpProvider } from './providers/warp.js';
+import { CopilotProvider } from './providers/copilot.js';
+import { SyntheticProvider } from './providers/synthetic.js';
+import { CodebuffProvider } from './providers/codebuff.js';
+import { ZaiProvider } from './providers/zai.js';
+import { PerplexityProvider } from './providers/perplexity.js';
+import { ManusProvider } from './providers/manus.js';
 import type { Provider, ProviderUsage } from './providers/types.js';
 import { Dashboard } from './tui/dashboard.js';
 import { ManagePage } from './tui/manage.js';
@@ -38,6 +50,30 @@ function buildProviders(): Provider[] {
         entry.workspaceId ?? opencodeGoWorkspaceEnv(),
         entry.label,
       ));
+    } else if (entry.provider === 'deepseek') {
+      list.push(new DeepSeekProvider(entry.key, entry.label));
+    } else if (entry.provider === 'venice') {
+      list.push(new VeniceProvider(entry.key, entry.label));
+    } else if (entry.provider === 'moonshot') {
+      list.push(new MoonshotProvider(entry.key, entry.label));
+    } else if (entry.provider === 'crof') {
+      list.push(new CrofProvider(entry.key, entry.label));
+    } else if (entry.provider === 'kimik2') {
+      list.push(new KimiK2Provider(entry.key, entry.label));
+    } else if (entry.provider === 'warp') {
+      list.push(new WarpProvider(entry.key, entry.label));
+    } else if (entry.provider === 'copilot') {
+      list.push(new CopilotProvider(entry.key, entry.label));
+    } else if (entry.provider === 'synthetic') {
+      list.push(new SyntheticProvider(entry.key, entry.label));
+    } else if (entry.provider === 'codebuff') {
+      list.push(new CodebuffProvider(entry.key, entry.label));
+    } else if (entry.provider === 'zai') {
+      list.push(new ZaiProvider(entry.key, entry.label));
+    } else if (entry.provider === 'perplexity') {
+      list.push(new PerplexityProvider(entry.key, entry.label));
+    } else if (entry.provider === 'manus') {
+      list.push(new ManusProvider(entry.key, entry.label));
     }
   }
 

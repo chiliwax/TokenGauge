@@ -23,6 +23,18 @@ const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   anthropic: 'Anthropic',
   opencode: 'OpenCode',
   'opencode-go': 'OpenCode Go',
+  deepseek: 'DeepSeek',
+  venice: 'Venice',
+  moonshot: 'Moonshot',
+  crof: 'Crof',
+  kimik2: 'Kimi K2',
+  warp: 'Warp',
+  copilot: 'Copilot',
+  synthetic: 'Synthetic',
+  codebuff: 'Codebuff',
+  zai: 'z.ai',
+  perplexity: 'Perplexity',
+  manus: 'Manus',
 };
 
 function fmtLabel(entry: AccountEntry, i: number): string {
@@ -36,7 +48,8 @@ function keyPreview(key: string): string {
 }
 
 function credentialType(entry: AccountEntry): string {
-  if (entry.provider === 'opencode' || entry.provider === 'opencode-go') return 'Web cookie';
+  if (entry.provider === 'opencode' || entry.provider === 'opencode-go' || entry.provider === 'perplexity') return 'Web cookie';
+  if (entry.provider === 'manus') return 'Session token';
   return entry.type === 'oauth' ? 'OAuth' : 'API key';
 }
 

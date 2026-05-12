@@ -13,6 +13,31 @@ TUI dashboard for AI provider token usage — live progress bars in your termina
   Updated 12:51:02 PM   Next in 24s   [r] reload
   ──────────────────────────────────────────────────────────────────────────────
 ```
+```
+ ──────────────────────────────────────────────────────────────────────────
+ ◈ TokenGauge                                                      [q] quit
+ ──────────────────────────────────────────────────────────────────────────
+ ╭────────────────────────────────────────────────────────────────────────╮
+ │ OpenRouter — $0.79 remaining                                           │
+ │ Used       ██████████████████████████████████████░░ 9.21/10            │
+ ╰────────────────────────────────────────────────────────────────────────╯
+ ╭────────────────────────────────────────────────────────────────────────╮
+ │ OpenAI — prolite                                                       │
+ │ 5h window  █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 3% · ~19min        │
+ │ Weekly     ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 8% · ~1d           │
+ │ GPT-5.3-Codex-Spark ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% · ~5h  │
+ │ Credits: None                                                          │
+ ╰────────────────────────────────────────────────────────────────────────╯
+ ╭────────────────────────────────────────────────────────────────────────╮
+ │ OpenCode Go                                                            │
+ │ 5h window  ███████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 17% · ~5h          │
+ │ Weekly     ███░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 7% · ~6d           │
+ │ Monthly    ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 9% · ~15d          │
+ ╰────────────────────────────────────────────────────────────────────────╯
+ ──────────────────────────────────────────────────────────────────────────
+ Updated 12:57:30 PM   Next in 18s                  [r] reload   [m] manage
+ ──────────────────────────────────────────────────────────────────────────
+```
 
 ## Usage
 
@@ -55,6 +80,54 @@ Configure `OpenCode (web cookie)` from the manage screen, or set `OPENCODE_COOKI
 ### OpenCode Go
 
 Configure `OpenCode Go (web cookie)` from the manage screen, or set `OPENCODE_GO_COOKIE`. If unset, it falls back to `OPENCODE_COOKIE`. Optional workspace override: `OPENCODE_GO_WORKSPACE_ID` or `CODEXBAR_OPENCODEGO_WORKSPACE_ID`.
+
+### DeepSeek
+
+Configure `DeepSeek` from the manage screen with your API key, or set `DEEPSEEK_API_KEY`.
+
+### Venice
+
+Configure `Venice` from the manage screen with your API key, or set `VENICE_API_KEY`.
+
+### Moonshot
+
+Configure `Moonshot` from the manage screen with your API key, or set `MOONSHOT_API_KEY`.
+
+### Crof
+
+Configure `Crof` from the manage screen with your API key, or set `CROF_API_KEY`.
+
+### Kimi K2
+
+Configure `Kimi K2` from the manage screen with your API key, or set `KIMIK2_API_KEY`.
+
+### Warp
+
+Configure `Warp` from the manage screen with your API key, or set `WARP_API_KEY`.
+
+### Copilot
+
+Configure `Copilot` from the manage screen with your GitHub token, or set `COPILOT_TOKEN`.
+
+### Synthetic
+
+Configure `Synthetic` from the manage screen with your API key, or set `SYNTHETIC_API_KEY`.
+
+### Codebuff
+
+Configure `Codebuff` from the manage screen with your API key, or set `CODEBUFF_API_KEY`. Optional base URL override: `CODEBUFF_API_URL`.
+
+### z.ai
+
+Configure `z.ai` from the manage screen with your API key, or set `ZAI_API_KEY`. Optional host override: `Z_AI_API_HOST`.
+
+### Perplexity
+
+Configure `Perplexity` from the manage screen with your session cookie, or set `PERPLEXITY_COOKIE`. Copy the Cookie header from your browser when signed in to perplexity.ai.
+
+### Manus
+
+Configure `Manus` from the manage screen with your session token, or set `MANUS_TOKEN`. Use the Authorization Bearer token from your browser's network requests to manus.im.
 
 ### Adding a new provider
 
