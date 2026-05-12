@@ -21,13 +21,12 @@ const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   openai: 'OpenAI',
   openrouter: 'OpenRouter',
   anthropic: 'Anthropic',
-  opencode: 'OpenCode',
+  opencode: 'OpenCode Black',
   'opencode-go': 'OpenCode Go',
   deepseek: 'DeepSeek',
   venice: 'Venice',
   moonshot: 'Moonshot',
   crof: 'Crof',
-  kimik2: 'Kimi K2',
   warp: 'Warp',
   copilot: 'Copilot',
   synthetic: 'Synthetic',
@@ -35,6 +34,10 @@ const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   zai: 'z.ai',
   perplexity: 'Perplexity',
   manus: 'Manus',
+  doubao: 'Doubao',
+  kilo: 'Kilo',
+  minimax: 'MiniMax',
+  ollama: 'Ollama',
 };
 
 function fmtLabel(entry: AccountEntry, i: number): string {
@@ -48,7 +51,7 @@ function keyPreview(key: string): string {
 }
 
 function credentialType(entry: AccountEntry): string {
-  if (entry.provider === 'opencode' || entry.provider === 'opencode-go' || entry.provider === 'perplexity') return 'Web cookie';
+  if (entry.provider === 'opencode' || entry.provider === 'opencode-go' || entry.provider === 'perplexity' || entry.provider === 'ollama') return 'Web cookie';
   if (entry.provider === 'manus') return 'Session token';
   return entry.type === 'oauth' ? 'OAuth' : 'API key';
 }

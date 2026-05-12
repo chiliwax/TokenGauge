@@ -62,13 +62,13 @@ If `auth.json` has an `apiKey` entry, or if you manually configure one, TokenGau
 
 Pass `--anthropic-key <key>` or set `ANTHROPIC_API_KEY`. Anthropic doesn't currently expose a usage API — shows a placeholder until they ship one.
 
-### OpenCode
+### OpenCode Black
 
-Configure `OpenCode (web cookie)` from the manage screen, or set `OPENCODE_COOKIE` to a `Cookie:` header from `opencode.ai`. Optional workspace override: `OPENCODE_WORKSPACE_ID` or `CODEXBAR_OPENCODE_WORKSPACE_ID`.
+Configure `OpenCode Black` from the manage screen with your session cookie, or set `OPENCODE_COOKIE`. See [Cookie-based providers](#cookie-based-providers) for how to get your cookie. Optional workspace override: `OPENCODE_WORKSPACE_ID` or `CODEXBAR_OPENCODE_WORKSPACE_ID`.
 
 ### OpenCode Go
 
-Configure `OpenCode Go (web cookie)` from the manage screen, or set `OPENCODE_GO_COOKIE`. If unset, it falls back to `OPENCODE_COOKIE`. Optional workspace override: `OPENCODE_GO_WORKSPACE_ID` or `CODEXBAR_OPENCODEGO_WORKSPACE_ID`.
+Configure `OpenCode Go` from the manage screen with your session cookie, or set `OPENCODE_GO_COOKIE`. If unset, it falls back to `OPENCODE_COOKIE`. See [Cookie-based providers](#cookie-based-providers) for how to get your cookie. Optional workspace override: `OPENCODE_GO_WORKSPACE_ID` or `CODEXBAR_OPENCODEGO_WORKSPACE_ID`.
 
 ### DeepSeek
 
@@ -85,10 +85,6 @@ Configure `Moonshot` from the manage screen with your API key, or set `MOONSHOT_
 ### Crof
 
 Configure `Crof` from the manage screen with your API key, or set `CROF_API_KEY`.
-
-### Kimi K2
-
-Configure `Kimi K2` from the manage screen with your API key, or set `KIMIK2_API_KEY`.
 
 ### Warp
 
@@ -112,11 +108,41 @@ Configure `z.ai` from the manage screen with your API key, or set `ZAI_API_KEY`.
 
 ### Perplexity
 
-Configure `Perplexity` from the manage screen with your session cookie, or set `PERPLEXITY_COOKIE`. Copy the Cookie header from your browser when signed in to perplexity.ai.
+Configure `Perplexity` from the manage screen with your session cookie, or set `PERPLEXITY_COOKIE`. See [Cookie-based providers](#cookie-based-providers) for how to get your cookie.
 
 ### Manus
 
 Configure `Manus` from the manage screen with your session token, or set `MANUS_TOKEN`. Use the Authorization Bearer token from your browser's network requests to manus.im.
+
+### Doubao
+
+Configure `Doubao` from the manage screen with your API key, or set `DOUBAO_API_KEY`.
+
+### Kilo
+
+Configure `Kilo` from the manage screen with your API key, or set `KILO_API_KEY`.
+
+### MiniMax
+
+Configure `MiniMax` from the manage screen with your API key, or set `MINIMAX_API_KEY`.
+
+### Ollama
+
+Configure `Ollama` from the manage screen with your session cookie, or set `OLLAMA_COOKIE`. See [Cookie-based providers](#cookie-based-providers) for how to get your cookie.
+
+## Cookie-based providers
+
+Some providers require a session cookie instead of an API key. To get your cookie:
+
+1. Open your browser's Developer Tools (F12)
+2. Go to the **Network** tab
+3. Sign in to the provider's website and navigate to the usage/settings page
+4. Find any request to the provider's domain (e.g., `opencode.ai`, `perplexity.ai`, `ollama.com`)
+5. Right-click the request → **Copy** → **Copy as cURL (bash)**
+6. Paste the copied command and extract the `Cookie:` header value
+7. In TokenGauge, select the provider and paste the cookie header when prompted
+
+Alternatively, you can use browser extensions like **EditThisCookie** to copy the cookie header directly.
 
 ### Adding a new provider
 

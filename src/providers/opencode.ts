@@ -15,13 +15,13 @@ export class OpenCodeProvider implements Provider {
     private workspaceId?: string,
     label?: string,
   ) {
-    this.displayName = label ?? 'OpenCode';
+    this.displayName = label ?? 'OpenCode Black';
   }
 
   async fetchUsage(): Promise<ProviderUsage> {
     const cookie = normalizeOpenCodeCookieHeader(this.cookieHeader);
     if (!cookie) {
-      throw new Error('OpenCode session cookie is empty or invalid. Reconnect with a Cookie header from opencode.ai, or paste the raw auth cookie value.');
+      throw new Error('OpenCode Black session cookie is empty or invalid. Reconnect with a Cookie header from opencode.ai, or paste the raw auth cookie value.');
     }
 
     const workspaceId = await resolveOpenCodeWorkspaceId(cookie, this.workspaceId);

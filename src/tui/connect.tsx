@@ -6,37 +6,53 @@ interface ConnectPageProps {
   onDone: (result: AccountEntry | null) => void;
 }
 
-const PROVIDERS: { value: AccountEntry['provider']; label: string }[] = [
-  { value: 'openai', label: 'OpenAI (API key)' },
+const PROVIDER_ROWS: { value: AccountEntry['provider']; label: string }[] = [
+  { value: 'openai', label: 'OpenAI' },
   { value: 'openrouter', label: 'OpenRouter' },
   { value: 'anthropic', label: 'Anthropic' },
-  { value: 'opencode', label: 'OpenCode (web cookie)' },
-  { value: 'opencode-go', label: 'OpenCode Go (web cookie)' },
+  { value: 'opencode', label: 'OpenCode Black' },
+  { value: 'opencode-go', label: 'OpenCode Go' },
   { value: 'deepseek', label: 'DeepSeek' },
   { value: 'venice', label: 'Venice' },
   { value: 'moonshot', label: 'Moonshot' },
   { value: 'crof', label: 'Crof' },
-  { value: 'kimik2', label: 'Kimi K2' },
   { value: 'warp', label: 'Warp' },
   { value: 'copilot', label: 'Copilot' },
   { value: 'synthetic', label: 'Synthetic' },
   { value: 'codebuff', label: 'Codebuff' },
   { value: 'zai', label: 'z.ai' },
-  { value: 'perplexity', label: 'Perplexity (cookie)' },
-  { value: 'manus', label: 'Manus (token)' },
+  { value: 'perplexity', label: 'Perplexity' },
+  { value: 'manus', label: 'Manus' },
+  { value: 'doubao', label: 'Doubao' },
+  { value: 'kilo', label: 'Kilo' },
+  { value: 'minimax', label: 'MiniMax' },
+  { value: 'ollama', label: 'Ollama' },
 ];
+const PROVIDERS = [...PROVIDER_ROWS].sort((a, b) => a.label.localeCompare(b.label));
+
+function credentialPrompt(provider: AccountEntry['provider']): string {
+  if (provider === 'opencode' || provider === 'opencode-go' || provider === 'perplexity' || provider === 'ollama') {
+    return `Paste your ${PROVIDER_LABELS[provider]} Cookie header or auth cookie value`;
+  }
+  if (provider === 'copilot') {
+    return `Enter your ${PROVIDER_LABELS[provider]} GitHub token`;
+  }
+  if (provider === 'manus') {
+    return `Enter your ${PROVIDER_LABELS[provider]} session token`;
+  }
+  return `Enter your ${PROVIDER_LABELS[provider]} API key`;
+}
 
 const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   openai: 'OpenAI',
   openrouter: 'OpenRouter',
   anthropic: 'Anthropic',
-  opencode: 'OpenCode',
+  opencode: 'OpenCode Black',
   'opencode-go': 'OpenCode Go',
   deepseek: 'DeepSeek',
   venice: 'Venice',
   moonshot: 'Moonshot',
   crof: 'Crof',
-  kimik2: 'Kimi K2',
   warp: 'Warp',
   copilot: 'Copilot',
   synthetic: 'Synthetic',
@@ -44,6 +60,10 @@ const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   zai: 'z.ai',
   perplexity: 'Perplexity',
   manus: 'Manus',
+  doubao: 'Doubao',
+  kilo: 'Kilo',
+  minimax: 'MiniMax',
+  ollama: 'Ollama',
 };
 
 type Phase =
@@ -53,7 +73,7 @@ type Phase =
   | { type: 'label'; provider: AccountEntry['provider']; key: string; workspaceId?: string };
 
 function usesCookie(provider: AccountEntry['provider']): boolean {
-  return provider === 'opencode' || provider === 'opencode-go' || provider === 'perplexity';
+  return provider === 'opencode' || provider === 'opencode-go' || provider === 'perplexity' || provider === 'ollama';
 }
 
 function buildEntry(phase: Extract<Phase, { type: 'label' }>, label?: string): AccountEntry {
@@ -155,7 +175,7 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
 
       {phase.type === 'input' && (
         <>
-          <Text bold>{usesCookie(phase.provider) ? `Paste your ${PROVIDER_LABELS[phase.provider]} Cookie header or auth cookie value` : `Enter your ${PROVIDER_LABELS[phase.provider]} API key`}</Text>
+          <Text bold>{credentialPrompt(phase.provider)}</Text>
           <Box marginTop={1}>
             <Text>{'  '}{buffer}<Text bold>{'_'}</Text></Text>
           </Box>
