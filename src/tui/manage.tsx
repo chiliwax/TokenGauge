@@ -21,7 +21,7 @@ const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   chatgpt: 'ChatGPT Plus/Pro',
   openai: 'OpenAI API',
   openrouter: 'OpenRouter',
-  anthropic: 'Anthropic',
+  anthropic: 'Claude / Anthropic',
   opencode: 'OpenCode Black',
   'opencode-go': 'OpenCode Go',
   deepseek: 'DeepSeek',
@@ -58,6 +58,7 @@ function keyPreview(key: string): string {
 
 function credentialType(entry: AccountEntry): string {
   if (entry.provider === 'chatgpt' || (entry.provider === 'openai' && entry.type === 'oauth')) return 'OAuth';
+  if (entry.provider === 'anthropic' && entry.type === 'oauth') return 'OAuth';
   if (entry.provider === 'opencode' || entry.provider === 'opencode-go' || entry.provider === 'ollama') return 'Web cookie';
   if (entry.provider === 'manus') return 'Session token';
   return 'API key';

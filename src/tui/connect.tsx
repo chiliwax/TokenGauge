@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Box, Text, useInput, useApp } from 'ink';
+import { detectFromOpenCode } from '../config.js';
 import type { AccountEntry } from '../config.js';
 import {
   beginChatGptDeviceAuth,
@@ -29,6 +30,7 @@ const PROVIDER_SECTIONS: ProviderSection[] = [
     title: 'Working / Recommended',
     providers: [
       { value: 'chatgpt', label: 'ChatGPT Plus/Pro', tag: 'OAuth' },
+      { value: 'anthropic', label: 'Claude / Anthropic', tag: 'OAuth via OpenCode' },
       { value: 'openrouter', label: 'OpenRouter', tag: 'API key' },
       { value: 'deepseek', label: 'DeepSeek', tag: 'API key' },
       { value: 'moonshot', label: 'Moonshot', tag: 'API key' },
@@ -62,7 +64,6 @@ const PROVIDER_SECTIONS: ProviderSection[] = [
     title: 'Coming Soon',
     providers: [
       { value: 'openai', label: 'OpenAI API', tag: 'coming soon', disabled: true, disabledReason: 'OpenAI API usage needs organization/admin usage endpoints; not implemented yet.' },
-      { value: 'anthropic', label: 'Anthropic', tag: 'coming soon', disabled: true, disabledReason: 'Anthropic usage needs Admin API reports; not implemented yet.' },
       { value: 'doubao', label: 'Doubao', tag: 'coming soon', disabled: true, disabledReason: 'Doubao requires a chat completion to read rate-limit headers and is not recommended for general use.' },
     ],
   },
@@ -92,7 +93,7 @@ const PROVIDER_LABELS: Record<AccountEntry['provider'], string> = {
   chatgpt: 'ChatGPT Plus/Pro',
   openai: 'OpenAI API',
   openrouter: 'OpenRouter',
-  anthropic: 'Anthropic',
+  anthropic: 'Claude / Anthropic',
   opencode: 'OpenCode Black',
   'opencode-go': 'OpenCode Go',
   deepseek: 'DeepSeek',
@@ -118,6 +119,7 @@ type Phase =
   | { type: 'workspace'; provider: AccountEntry['provider']; key: string }
   | { type: 'oauth-start'; error?: string }
   | { type: 'oauth-device'; device: ChatGptDeviceAuth; error?: string }
+  | { type: 'opencode-oauth-import'; provider: 'anthropic'; error?: string }
   | { type: 'label'; entry: AccountEntry }
   | { type: 'disabled'; entry: ProviderEntry };
 
@@ -148,6 +150,10 @@ function addLabel(entry: AccountEntry, label?: string): AccountEntry {
   };
 }
 
+function detectOpenCodeOAuth(provider: 'anthropic'): AccountEntry | null {
+  return detectFromOpenCode().find(entry => entry.provider === provider && entry.type === 'oauth') ?? null;
+}
+
 export function ConnectPage({ onDone }: ConnectPageProps) {
   const { exit } = useApp();
   const [phase, setPhase] = useState<Phase>({ type: 'select' });
@@ -166,6 +172,10 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
           setPhase({ type: 'disabled', entry });
         } else if (entry.value === 'chatgpt') {
           setPhase({ type: 'oauth-start' });
+          setCursor(0);
+          setBuffer('');
+        } else if (entry.value === 'anthropic') {
+          setPhase({ type: 'opencode-oauth-import', provider: 'anthropic' });
           setCursor(0);
           setBuffer('');
         } else {
@@ -215,6 +225,25 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
       if (key.escape) {
         setPhase({ type: 'select' });
         setBuffer('');
+      } else if ((key.ctrl && input === 'c') || input === 'q') {
+        exit();
+      }
+    } else if (phase.type === 'opencode-oauth-import') {
+      if (key.escape) {
+        setPhase({ type: 'select' });
+        setBuffer('');
+      } else if (key.return) {
+        const entry = detectOpenCodeOAuth(phase.provider);
+        if (entry) {
+          setPhase({ type: 'label', entry });
+          setBuffer('');
+        } else {
+          setPhase({
+            type: 'opencode-oauth-import',
+            provider: phase.provider,
+            error: 'No Claude OAuth entry found in ~/.local/share/opencode/auth.json. Run `opencode auth login anthropic` or import after logging in with OpenCode.',
+          });
+        }
       } else if ((key.ctrl && input === 'c') || input === 'q') {
         exit();
       }
@@ -349,11 +378,24 @@ export function ConnectPage({ onDone }: ConnectPageProps) {
         </>
       )}
 
+      {phase.type === 'opencode-oauth-import' && (
+        <>
+          <Text bold>Claude / Anthropic OAuth</Text>
+          <Box flexDirection="column" marginTop={1}>
+            <Text>{'  '}TokenGauge uses OpenCode&apos;s Claude OAuth session for this provider.</Text>
+            <Text dimColor>{'  '}Press Enter to import Anthropic OAuth from ~/.local/share/opencode/auth.json.</Text>
+            <Text dimColor>{'  '}Normal Anthropic API keys do not expose Claude subscription usage.</Text>
+          </Box>
+          {phase.error ? <Text color="red">{'  '}{phase.error}</Text> : null}
+          <Text dimColor>{'  '}Enter import · Esc cancel</Text>
+        </>
+      )}
+
       {phase.type === 'disabled' && (
         <>
           <Text bold>{phase.entry.label}</Text>
           <Box flexDirection="column" marginTop={1}>
-            <Text color="yellow">{'  '}This provider is not yet available.</Text>
+            <Text color="yellow">{'  '}Manual connection is not available here.</Text>
             <Text dimColor>{'  '}{phase.entry.disabledReason}</Text>
           </Box>
           <Text dimColor>{'  '}Esc or Enter to go back</Text>

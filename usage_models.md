@@ -81,9 +81,42 @@ Response:
 }
 ```
 
-### API key → self-service endpoint
+### API key → not ChatGPT subscription usage
 
-When OpenCode has an API key instead of OAuth, use:
+When OpenCode has an API key instead of OAuth, do not treat it as ChatGPT Plus/Pro quota. Normal OpenAI API keys need organization/admin usage support and are kept separate in TokenGauge.
+
+## Claude / Anthropic Usage Check
+
+### Auth Source
+
+OpenCode stores Claude OAuth tokens under `anthropic` in `~/.local/share/opencode/auth.json`:
+
+```json
+{
+  "anthropic": {
+    "type": "oauth",
+    "access": "<access_token>",
+    "refresh": "<refresh_token>",
+    "expires": 1770563557150
+  }
+}
+```
+
+Normal Anthropic API keys are not Claude subscription OAuth credentials.
+
+### OAuth token → Claude usage endpoint
+
+```http
+GET https://api.anthropic.com/api/oauth/usage
+Authorization: Bearer <access_token>
+anthropic-beta: oauth-2025-04-20
+Accept: application/json
+Content-Type: application/json
+```
+
+Known response fields include `five_hour`, `seven_day`, `seven_day_oauth_apps`, `seven_day_opus`, `seven_day_sonnet`, design/routine aliases, `iguana_necktie`, and `extra_usage`. Usage windows expose `utilization` plus optional `resets_at`; `extra_usage` can expose `is_enabled`, `monthly_limit`, `used_credits`, `utilization`, and `currency`.
+
+<!-- Historical OpenAI API sketch kept for reference:
 
 ```
 GET https://api.openai.com/v1/usage
@@ -127,6 +160,7 @@ Response:
   ]
 }
 ```
+-->
 
 ## Window Resolution
 

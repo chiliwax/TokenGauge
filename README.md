@@ -11,7 +11,7 @@ TUI dashboard for AI provider token usage — live progress bars in your termina
  │ Used       ██████████████████████████████████████░░ 9.21/10            │
  ╰────────────────────────────────────────────────────────────────────────╯
  ╭────────────────────────────────────────────────────────────────────────╮
- │ OpenAI — prolite                                                       │
+ │ ChatGPT Plus/Pro — prolite                                             │
  │ 5h window  █░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 3% · ~19min        │
  │ Weekly     ████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 8% · ~1d           │
  │ GPT-5.3-Codex-Spark ░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ 0% · ~5h  │
@@ -39,7 +39,6 @@ npx tsx src/index.ts
 | Argument | Description |
 |---|---|
 | `--auth-path` / `-p` | Custom path to OpenCode `auth.json` |
-| `--anthropic-key` | Anthropic API key (or `ANTHROPIC_API_KEY` env) |
 
 ### Keys
 
@@ -50,17 +49,17 @@ npx tsx src/index.ts
 
 ## Providers
 
-### OpenAI (OAuth)
+### ChatGPT Plus/Pro (OAuth)
 
-Auto-detected from `~/.local/share/opencode/auth.json`. Supports both OAuth tokens and API keys.
+Connect from the manage screen with the headless OAuth flow, or import OpenCode's `openai` OAuth entry from `~/.local/share/opencode/auth.json`. This uses ChatGPT's `https://chatgpt.com/backend-api/wham/usage` endpoint and can show 5h/weekly subscription windows.
 
 ### OpenAI (API key)
 
-If `auth.json` has an `apiKey` entry, or if you manually configure one, TokenGauge calls the self-service usage API.
+If OpenCode has an API-key entry, or if you manually configure one later, TokenGauge keeps it separate from ChatGPT Plus/Pro. Normal OpenAI API keys do not expose ChatGPT subscription quota, so this currently shows a configured-placeholder until organization/admin usage support is added.
 
-### Anthropic
+### Claude / Anthropic
 
-Pass `--anthropic-key <key>` or set `ANTHROPIC_API_KEY`. Anthropic doesn't currently expose a usage API — shows a placeholder until they ship one.
+Choose `Claude / Anthropic` in the connect menu to import OpenCode's `anthropic` OAuth entry from `~/.local/share/opencode/auth.json`, or use Manage → Import from OpenCode. TokenGauge calls `GET https://api.anthropic.com/api/oauth/usage` with `Authorization: Bearer <access>` and `anthropic-beta: oauth-2025-04-20`, then displays Claude usage windows such as 5h, weekly, Opus/Sonnet, and extra usage when present. Normal Anthropic API keys are not Claude subscription OAuth credentials and only show a limited placeholder.
 
 ### OpenCode Black
 

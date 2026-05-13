@@ -53,7 +53,17 @@ function buildProviders(): Provider[] {
     } else if (entry.provider === 'openrouter') {
       list.push(new OpenRouterProvider(entry.key, entry.label));
     } else if (entry.provider === 'anthropic') {
-      list.push(new AnthropicProvider(entry.key, entry.label));
+      if (entry.type === 'oauth') {
+        list.push(new AnthropicProvider({
+          type: 'oauth',
+          access: entry.key,
+          accountId: entry.accountId,
+          refresh: entry.refresh,
+          expires: entry.expires,
+        }, entry.label));
+      } else {
+        list.push(new AnthropicProvider(entry.key, entry.label));
+      }
     } else if (entry.provider === 'opencode') {
       list.push(new OpenCodeProvider(
         entry.key,

@@ -71,3 +71,73 @@ test('keeps legacy OpenCode apiKey entries as OpenAI API', async () => {
     ]);
   });
 });
+
+test('imports OpenCode Anthropic OAuth as Claude / Anthropic', async () => {
+  await withAuthFile({
+    anthropic: {
+      type: 'oauth',
+      access: 'claude-access-token',
+      accountId: 'claude-account',
+      expires: 987654321,
+    },
+  }, (path) => {
+    assert.deepEqual(detectFromOpenCode(path), [
+      {
+        provider: 'anthropic',
+        key: 'claude-access-token',
+        type: 'oauth',
+        accountId: 'claude-account',
+        expires: 987654321,
+      },
+    ]);
+  });
+});
+
+test('ignores malformed Anthropic OAuth entries from OpenCode', async () => {
+  await withAuthFile({
+    anthropic: {
+      type: 'oauth',
+      access: 123,
+      refresh: false,
+      expires: 'soon',
+    },
+  }, (path) => {
+    assert.deepEqual(detectFromOpenCode(path), []);
+  });
+});
+
+test('filters malformed optional OpenCode auth fields', async () => {
+  await withAuthFile({
+    openai: {
+      type: 'oauth',
+      access: 'oauth-access-token',
+      accountId: 123,
+      refresh: false,
+      expires: 'soon',
+    },
+    openrouter: {
+      type: 'api',
+      key: 456,
+    },
+    anthropic: {
+      type: 'oauth',
+      access: 'claude-access-token',
+      accountId: false,
+      refresh: 'not-imported',
+      expires: 'soon',
+    },
+  }, (path) => {
+    assert.deepEqual(detectFromOpenCode(path), [
+      {
+        provider: 'chatgpt',
+        key: 'oauth-access-token',
+        type: 'oauth',
+      },
+      {
+        provider: 'anthropic',
+        key: 'claude-access-token',
+        type: 'oauth',
+      },
+    ]);
+  });
+});

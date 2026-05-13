@@ -158,3 +158,22 @@ test('parses OpenCode Go HTML script payloads with Solid $R wrappers', () => {
   assert.equal(usage.monthlyUsage?.usedPercent, 6);
   assert.equal(usage.monthlyUsage?.resetInSeconds, 1316974);
 });
+
+test('prefers explicit OpenCode Go usagePercent over status text', () => {
+  const usage = parseOpenCodeGoSubscription(`
+    <script>
+      $R[24]($R[18],$R[25]={
+        mine:!0,
+        useBalance:!1,
+        rollingUsage:$R[26]={status:"ok",resetInSec:16585,usagePercent:1},
+        weeklyUsage:$R[27]={status:"ok",resetInSec:401925,usagePercent:31},
+        monthlyUsage:$R[28]={status:"ok",resetInSec:1228889,usagePercent:21}
+      });
+    </script>
+  `);
+
+  assert.equal(usage.rollingUsage.usedPercent, 1);
+  assert.equal(usage.rollingUsage.resetInSeconds, 16585);
+  assert.equal(usage.weeklyUsage.usedPercent, 31);
+  assert.equal(usage.monthlyUsage?.usedPercent, 21);
+});

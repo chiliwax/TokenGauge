@@ -17,7 +17,6 @@ const PERCENT_KEYS = [
   'utilization',
   'utilizationPercent',
   'utilization_percent',
-  'usage',
 ];
 
 const RESET_IN_KEYS = [
@@ -62,6 +61,11 @@ export interface ParsedSubscriptionUsage {
 }
 
 type AnyRecord = Record<string, unknown>;
+
+interface MatchedNumber {
+  key: string;
+  value: number;
+}
 
 interface WindowCandidate extends ParsedUsageWindow {
   id: number;
@@ -511,18 +515,17 @@ function parseTextWindow(text: string, key: string): ParsedUsageWindow | null {
   if (!block || block.length === 0) return null;
 
   const percent = extractNumberByKeys(block, PERCENT_KEYS);
-  if (percent == null) return null;
+  if (!percent) return null;
 
-  let usedPercent = percent;
-  if (usedPercent >= 0 && usedPercent <= 1) usedPercent *= 100;
+  const usedPercent = normalizePercentValue(percent.value, percent.key);
 
   const resetInSeconds = extractNumberByKeys(block, RESET_IN_KEYS);
   const resetAt = extractValueByKeys(block, RESET_AT_KEYS);
-  const resetFromDate = resetAt == null ? null : secondsUntil(resetAt);
+  const resetFromDate = resetAt == null ? null : secondsUntil(resetAt.value);
 
   return {
     usedPercent: clampPercent(usedPercent),
-    resetInSeconds: Math.max(0, Math.trunc(resetInSeconds ?? resetFromDate ?? 0)),
+    resetInSeconds: Math.max(0, Math.trunc(resetInSeconds?.value ?? resetFromDate ?? 0)),
   };
 }
 
@@ -579,22 +582,22 @@ function buildUsage(
 }
 
 function parseWindow(record: AnyRecord): ParsedUsageWindow | null {
-  let percent = numberFromKeys(record, PERCENT_KEYS);
-  if (percent == null) {
+  const percent = numberFromKeys(record, PERCENT_KEYS);
+  let usedPercent = percent ? normalizePercentValue(percent.value, percent.key) : null;
+  if (usedPercent == null) {
     const used = numberFromKeys(record, ['used', 'usage', 'consumed', 'count', 'usedTokens']);
     const limit = numberFromKeys(record, ['limit', 'total', 'quota', 'max', 'cap', 'tokenLimit']);
-    if (used != null && limit != null && limit > 0) percent = (used / limit) * 100;
+    if (used && limit && limit.value > 0) usedPercent = (used.value / limit.value) * 100;
   }
 
-  if (percent == null) return null;
-  if (percent >= 0 && percent <= 1) percent *= 100;
+  if (usedPercent == null) return null;
 
   const resetIn = numberFromKeys(record, RESET_IN_KEYS);
   const resetAt = valueFromKeys(record, RESET_AT_KEYS);
 
   return {
-    usedPercent: clampPercent(percent),
-    resetInSeconds: Math.max(0, Math.trunc(resetIn ?? secondsUntil(resetAt) ?? 0)),
+    usedPercent: clampPercent(usedPercent),
+    resetInSeconds: Math.max(0, Math.trunc(resetIn?.value ?? secondsUntil(resetAt) ?? 0)),
   };
 }
 
@@ -677,10 +680,10 @@ function extractServerErrorMessage(text: string): string | null {
   return text.match(/<title>([^<]+)<\/title>/i)?.[1]?.trim() ?? null;
 }
 
-function numberFromKeys(record: AnyRecord, keys: string[]): number | null {
+function numberFromKeys(record: AnyRecord, keys: string[]): MatchedNumber | null {
   for (const key of keys) {
     const value = numberFromValue(record[key]);
-    if (value != null) return value;
+    if (value != null) return { key, value };
   }
   return null;
 }
@@ -719,15 +722,29 @@ function secondsUntil(value: unknown): number | null {
   return null;
 }
 
-function extractNumberByKeys(text: string, keys: string[]): number | null {
+function extractNumberByKeys(text: string, keys: string[]): MatchedNumber | null {
   const value = extractValueByKeys(text, keys);
-  return value == null ? null : numberFromValue(value);
+  if (!value) return null;
+  const number = numberFromValue(value.value);
+  return number == null ? null : { key: value.key, value: number };
 }
 
-function extractValueByKeys(text: string, keys: string[]): string | null {
-  const keyPattern = keys.map(escapeRegExp).join('|');
-  const match = new RegExp(`["']?(?:${keyPattern})["']?\\s*[:=]\\s*["']?([^"',}\\s]+)`, 'i').exec(text);
-  return match?.[1] ?? null;
+function extractValueByKeys(text: string, keys: string[]): { key: string; value: string } | null {
+  for (const key of keys) {
+    const match = new RegExp(`["']?${escapeRegExp(key)}["']?\\s*[:=]\\s*["']?([^"',}\\s]+)`, 'i').exec(text);
+    if (match) return { key, value: match[1] };
+  }
+  return null;
+}
+
+function normalizePercentValue(value: number, key: string): number {
+  if (isExplicitPercentKey(key)) return value;
+  return value >= 0 && value <= 1 ? value * 100 : value;
+}
+
+function isExplicitPercentKey(key: string): boolean {
+  const normalized = key.toLowerCase().replace(/_/g, '');
+  return normalized.includes('percent') && normalized !== 'percent';
 }
 
 function clampPercent(value: number): number {
